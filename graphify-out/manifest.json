@@ -1,0 +1,27 @@
+{
+  "src/client/java/io/github/jsevenheck/compasshud/client/CompassHUDClient.java": {
+    "mtime": 1785785421.2340975,
+    "ast_hash": "32f2a6f5d7465ee5259fe9aee3f84cee",
+    "semantic_hash": ""
+  },
+  "src/client/java/io/github/jsevenheck/compasshud/client/mixin/ExampleClientMixin.java": {
+    "mtime": 1785782868.2957702,
+    "ast_hash": "74af7dde9b736eb5f1f7a5691aca6bf5",
+    "semantic_hash": ""
+  },
+  "src/main/java/io/github/jsevenheck/compasshud/CompassHUD.java": {
+    "mtime": 1785782868.8691185,
+    "ast_hash": "5dc8eac3fe60f6d1afd334767769e099",
+    "semantic_hash": ""
+  },
+  "src/main/java/io/github/jsevenheck/compasshud/mixin/ExampleMixin.java": {
+    "mtime": 1785782869.1393108,
+    "ast_hash": "9fe0bef01bb5834bedad464b84a29a20",
+    "semantic_hash": ""
+  },
+  "src/client/java/io/github/jsevenheck/compasshud/client/CompassHudRenderer.java": {
+    "mtime": 1785786597.2189355,
+    "ast_hash": "b93ef04a321ab29e8529d6c5e0224da4",
+    "semantic_hash": ""
+  }
+}

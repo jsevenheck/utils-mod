@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "compass-hud",
+	"version": "${version}",
+	"name": "Compass HUD",
+	"description": "Displays a compass at the top of the HUD.",
+	"authors": [
+		"Gromel1"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/compass-hud/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"main": [
+			"io.github.jsevenheck.compasshud.CompassHUD"
+		],
+		"client": [
+			"io.github.jsevenheck.compasshud.client.CompassHUDClient"
+		]
+	},
+	"mixins": [
+		"compass-hud.mixins.json",
+		{
+			"config": "compass-hud.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

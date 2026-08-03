@@ -1,0 +1,54 @@
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
+# eclipse
+
+*.launch
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+node_modules/
+
+# macos
+
+*.DS_Store
+
+# fabric
+
+run/
+
+# java
+
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+graphify-out/cache/
+graphify-out/graph.html
+graphify-out/.graphify_analysis.json
+graphify-out/.graphify_labels.json
+graphify-out/.graphify_root
+graphify-out/GRAPH_TREE.html
+graphify-out/.graphify_labels.json.sig
+# Dated backups of the previous graph, created on every `graphify update`
+graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+# Machine-specific: absolute interpreter path + local cost tracker
+graphify-out/.graphify_python
+graphify-out/cost.json

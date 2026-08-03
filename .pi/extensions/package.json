@@ -1,0 +1,7 @@
+{
+  "name": "pi-project-extensions",
+  "private": true,
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "latest"
+  }
+}

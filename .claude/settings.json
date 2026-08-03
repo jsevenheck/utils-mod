@@ -1,0 +1,95 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew build*)",
+      "Bash(./gradlew runClient*)",
+      "Bash(./gradlew runServer*)",
+      "Bash(./gradlew genSources*)",
+      "Bash(./gradlew clean*)",
+      "Bash(./gradlew check*)",
+      "Bash(./gradlew help*)",
+      "Bash(./gradlew projects*)",
+      "Bash(./gradlew tasks*)",
+      "Bash(./gradlew properties*)",
+      "Bash(./gradlew dependencies*)",
+      "Bash(./gradlew --stop*)",
+      "Bash(./gradlew --version*)",
+
+      "Bash(graphify update*)",
+      "Bash(graphify query*)",
+      "Bash(graphify path*)",
+      "Bash(graphify explain*)",
+
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+
+      "Edit(**/*.java)",
+      "Edit(**/*.json)",
+      "Edit(**/*.mcmeta)",
+      "Edit(**/*.md)",
+      "Edit(**/*.yml)",
+      "Edit(**/*.yaml)",
+      "Edit(**/.github/**)",
+      "Edit(**/.gitignore)",
+      "Edit(**/gradle.properties)",
+      "Edit(**/build.gradle)",
+      "Edit(**/build.gradle.kts)",
+      "Edit(**/settings.gradle)",
+      "Edit(**/settings.gradle.kts)",
+      "Edit(**/*.sh)",
+
+      "Write(**/*.java)",
+      "Write(**/*.json)",
+      "Write(**/*.mcmeta)",
+      "Write(**/*.md)",
+      "Write(**/*.yml)",
+      "Write(**/*.yaml)",
+      "Write(**/.github/**)",
+      "Write(**/.gitignore)",
+      "Write(**/*.sh)",
+
+      "Read(**/*)"
+    ],
+    "deny": [
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(git reset*)",
+
+      "Edit(**/.env*)",
+      "Write(**/.env*)",
+      "Read(**/.env*)",
+      "Read(**/graphify-out/**)",
+
+      "Edit(**/.claude/settings.json)",
+      "Write(**/.claude/settings.json)",
+
+      "Write(**/fabric.mod.json)",
+      "Write(**/build.gradle)",
+      "Write(**/build.gradle.kts)",
+      "Write(**/settings.gradle)",
+      "Write(**/settings.gradle.kts)",
+      "Write(**/gradle.properties)",
+      "Write(**/gradle/wrapper/**)",
+
+      "Bash(rm -rf*)",
+      "Bash(sudo*)",
+      "Bash(su*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ${CLAUDE_PROJECT_DIR}/.claude/hooks/graphify_hint.py"
+          }
+        ]
+      }
+    ]
+  }
+}

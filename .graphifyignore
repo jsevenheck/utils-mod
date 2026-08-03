@@ -1,0 +1,100 @@
+# .graphifyignore
+# Ziel: den Graph auf den reinen Quellcode (CODE ONLY) dieses Java-/Fabric-Mods begrenzen.
+# Das Repo ist ein einzelnes Fabric-Loom-Projekt mit Split Source Sets (src/main + src/client),
+# Mixin-Setup, Ressourcen (fabric.mod.json, Mixin-Configs, Assets) und Gradle-Tooling.
+# Strategie: alles ignorieren, nur Traversal in die Source-Verzeichnisse erlauben und ausschliesslich
+# Java-Quellcode wieder einschliessen. Keine Konfig-, Tooling- oder Datendateien.
+
+# Standardmäßig alles ignorieren.
+*
+
+# Traversal in die relevanten Bereiche erlauben.
+!src/
+!src/**/
+
+# === Code only: ausschliesslich Java-Quellcode ===
+# Main-Source-Set (Mod-Hauptklasse + Mixins) und Client-Source-Set (HUD-Rendering + Client-Mixins)
+!src/**/*.java
+# Tests (aktuell keine vorhanden; Muster greifen, sobald src/test/ oder src/client/test/ angelegt werden)
+!src/test/**/*.java
+!src/client/test/**/*.java
+
+# === Explizit ausgeschlossen: Resources, Assets, Mod-Konfiguration (kein Code) ===
+src/main/resources/
+src/client/resources/
+src/test/resources/
+src/client/test/resources/
+**/resources/
+*.json
+*.mixins.json
+*.mcmeta
+*.properties
+*.toml
+*.cfg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+
+# === Explizit ausgeschlossen: Gradle-Build, Caches, Output, Dev-Runtime ===
+.gradle/
+**/.gradle/
+build/
+**/build/
+out/
+**/out/
+bin/
+classes/
+run/
+**/run/
+*.jar
+*.class
+*.zip
+*.cache
+
+# === Explizit ausgeschlossen: Build-Skripte und Tooling (kein Quellcode) ===
+gradle/
+**/gradle/
+*.gradle
+*.gradle.kts
+gradlew
+gradlew.bat
+gradle.properties
+settings.gradle
+settings.gradle.kts
+
+# === Explizit ausgeschlossen: Docs, Assets, Nicht-Code-Artefakte ===
+README.md
+LICENSE
+*.md
+*.txt
+*.log
+*.html
+*.pdf
+*.gz
+
+# === Explizit ausgeschlossen: Agent-/Editor-/VCS-Dateien ===
+.git/
+.github/
+.agents/
+.claude/
+.pi/
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+.classpath
+.project
+.settings/
+
+# === Explizit ausgeschlossen: Secrets und lokale Umgebung ===
+.env
+.env.*
+*.local
+
+# === Graphify Output selbst nicht einlesen ===
+graphify-out/
