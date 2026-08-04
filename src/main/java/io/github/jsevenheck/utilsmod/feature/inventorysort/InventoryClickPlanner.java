@@ -7,14 +7,16 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
  * Turns a {@code current} slot snapshot and a desired {@code target} snapshot (as produced by
  * {@link InventorySortPlanner}, over the same set of slot indices) into a deterministic sequence of
- * plain single-clicks ({@link ClickOperation}) that realizes the target arrangement.
+ * plain container interactions ({@link ClickOperation}) that realize the target arrangement.
  * <p>
- * Every operation is a simple "pickup" click, so the whole plan can be executed with the ordinary
+ * Every operation is a normal pickup click or a guarded PICKUP_ALL collection, so the whole plan can
+ * be executed with the ordinary
  * container click API. Planning happens in two phases entirely on an internal simulated snapshot; the
  * real menu/slots are never touched or mutated by this class.
  * <ol>
@@ -32,6 +34,16 @@ public final class InventoryClickPlanner {
     }
 
     public static List<ClickOperation> plan(List<SortSlot> current, List<SortSlot> target) {
+        return plan(current, target, Set.of());
+    }
+
+    /**
+     * Plans a sort and optionally enables the safe vanilla PICKUP_ALL consolidation fast path for
+     * the supplied identities. The caller must only provide identities for which no matching stack
+     * exists outside the section being planned; PICKUP_ALL searches the entire open menu.
+     */
+    public static List<ClickOperation> plan(List<SortSlot> current, List<SortSlot> target,
+                                            Set<ItemIdentity> pickupAllSafeIdentities) {
         Map<Integer, Cell> state = new HashMap<>();
         Map<Integer, Integer> maxBySlot = new HashMap<>();
         for (SortSlot slot : current) {
@@ -44,7 +56,7 @@ public final class InventoryClickPlanner {
 
         List<ClickOperation> ops = new ArrayList<>();
 
-        consolidate(current, state, maxBySlot, ops);
+        consolidate(current, state, maxBySlot, ops, pickupAllSafeIdentities);
         permute(state, target, maxBySlot, ops);
 
         return ops;
@@ -52,7 +64,9 @@ public final class InventoryClickPlanner {
 
     // ---- Phase 1: consolidation -------------------------------------------------------------
 
-    private static void consolidate(List<SortSlot> current, Map<Integer, Cell> state, Map<Integer, Integer> maxBySlot, List<ClickOperation> ops) {
+    private static void consolidate(List<SortSlot> current, Map<Integer, Cell> state,
+                                    Map<Integer, Integer> maxBySlot, List<ClickOperation> ops,
+                                    Set<ItemIdentity> pickupAllSafeIdentities) {
         Map<ItemIdentity, List<Integer>> groups = new TreeMap<>(ItemIdentity::compare);
         for (SortSlot slot : current) {
             if (slot.isEmpty()) {
@@ -62,8 +76,112 @@ public final class InventoryClickPlanner {
         }
         for (List<Integer> slots : groups.values()) {
             slots.sort(Comparator.naturalOrder());
+            ItemIdentity identity = state.get(slots.get(0)).identity;
+            if (pickupAllSafeIdentities.contains(identity)
+                && consolidateGroupWithPickupAll(slots, state, maxBySlot, ops)) {
+                // The fast path may fill only one cursor-sized chunk. Let the normal planner finish
+                // any remainder, now starting from the already consolidated first chunk.
+                consolidateGroup(slots, state, maxBySlot, ops);
+                continue;
+            }
             consolidateGroup(slots, state, maxBySlot, ops);
         }
+    }
+
+    /**
+     * Collects a complete identity group with vanilla PICKUP_ALL. Groups that exceed the cursor
+     * capacity are rejected here and handled by the conservative waterfall algorithm.
+     */
+    private static boolean consolidateGroupWithPickupAll(List<Integer> slots, Map<Integer, Cell> state,
+                                                         Map<Integer, Integer> maxBySlot,
+                                                         List<ClickOperation> ops) {
+        if (slots.size() < 3) {
+            return false;
+        }
+
+        ItemIdentity identity = state.get(slots.get(0)).identity;
+        int total = 0;
+        int cursorCapacity = Integer.MAX_VALUE;
+        int nonFullSlots = 0;
+        for (int slotIndex : slots) {
+            Cell cell = state.get(slotIndex);
+            if (cell.isEmpty() || !identity.equals(cell.identity)) {
+                return false;
+            }
+            total = Math.addExact(total, cell.count);
+            cursorCapacity = Math.min(cursorCapacity, maxBySlot.get(slotIndex));
+            if (cell.count < maxBySlot.get(slotIndex)) {
+                nonFullSlots++;
+            }
+        }
+        for (int slotIndex : slots) {
+            if (maxBySlot.get(slotIndex) != cursorCapacity) {
+                // The pure snapshot does not carry the item's independent cursor max. Equal slot
+                // caps are therefore required so the local PICKUP_ALL simulation is exact.
+                return false;
+            }
+        }
+
+        if (total <= 0 || total > cursorCapacity || nonFullSlots < 2) {
+            return false;
+        }
+
+        int donorSlot = slots.get(slots.size() - 1);
+        Cell donor = state.get(donorSlot);
+        int cursorCount = donor.count;
+
+        ops.add(new ClickOperation(donorSlot, donor.identity, donor.count, true));
+        donor.identity = null;
+        donor.count = 0;
+
+        ops.add(new ClickOperation(donorSlot, null, 0, false, ClickOperation.Kind.PICKUP_ALL));
+
+        // This mirrors AbstractContainerMenu's two PICKUP_ALL passes: the first pass skips full
+        // stacks, the second pass may take from every matching stack until the cursor is full.
+        for (int pass = 0; pass < 2 && cursorCount < cursorCapacity; pass++) {
+            for (int slotIndex : slots) {
+                Cell cell = state.get(slotIndex);
+                if (cell.isEmpty() || !identity.equals(cell.identity)) {
+                    continue;
+                }
+                if (pass == 0 && cell.count >= cursorCapacity) {
+                    continue;
+                }
+                int transferred = Math.min(cell.count, cursorCapacity - cursorCount);
+                cell.count -= transferred;
+                cursorCount += transferred;
+                if (cell.count == 0) {
+                    cell.identity = null;
+                }
+                if (cursorCount >= cursorCapacity) {
+                    break;
+                }
+            }
+        }
+
+        // Place the collected chunk into the lowest slot with room. This is expressed as a normal
+        // pickup operation so the existing state preconditions remain useful.
+        while (cursorCount > 0) {
+            int destination = -1;
+            for (int slotIndex : slots) {
+                Cell cell = state.get(slotIndex);
+                if (cell.isEmpty() || cell.count < maxBySlot.get(slotIndex)) {
+                    destination = slotIndex;
+                    break;
+                }
+            }
+            if (destination < 0) {
+                return false;
+            }
+            Cell cell = state.get(destination);
+            ops.add(new ClickOperation(destination, cell.identity, cell.count, false));
+            int room = maxBySlot.get(destination) - cell.count;
+            int transferred = Math.min(room, cursorCount);
+            cell.identity = identity;
+            cell.count += transferred;
+            cursorCount -= transferred;
+        }
+        return true;
     }
 
     private static void consolidateGroup(List<Integer> slots, Map<Integer, Cell> state, Map<Integer, Integer> maxBySlot, List<ClickOperation> ops) {

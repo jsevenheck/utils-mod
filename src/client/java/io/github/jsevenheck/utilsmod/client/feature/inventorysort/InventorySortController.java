@@ -3,6 +3,7 @@ package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 import io.github.jsevenheck.utilsmod.client.config.ModConfig;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.ClickOperation;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.InventoryClickPlanner;
+import io.github.jsevenheck.utilsmod.feature.inventorysort.ItemIdentity;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.InventorySortPlanner;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.SortSlot;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Orchestrates a single sort trigger: resolves the current screen into sortable slots, plans the
@@ -70,22 +72,22 @@ final class InventorySortController {
     private static List<ClickOperation> planOperations(SortSession session, ModConfig config) {
         List<ClickOperation> operations = new ArrayList<>();
         if (config.sortSectionsIndependently) {
-            operations.addAll(planSection(session.playerSlots()));
-            operations.addAll(planSection(session.containerSlots()));
+            operations.addAll(planSection(session.playerSlots(), session.pickupAllSafeIdentities(session.playerSlots())));
+            operations.addAll(planSection(session.containerSlots(), session.pickupAllSafeIdentities(session.containerSlots())));
         } else {
             List<SortSlot> combined = new ArrayList<>(session.playerSlots());
             combined.addAll(session.containerSlots());
-            operations.addAll(planSection(combined));
+            operations.addAll(planSection(combined, session.pickupAllSafeIdentities(combined)));
         }
         return operations;
     }
 
-    private static List<ClickOperation> planSection(List<SortSlot> slots) {
+    private static List<ClickOperation> planSection(List<SortSlot> slots, Set<ItemIdentity> pickupAllSafeIdentities) {
         if (slots.isEmpty()) {
             return List.of();
         }
         List<SortSlot> target = InventorySortPlanner.plan(slots);
-        return InventoryClickPlanner.plan(slots, target);
+        return InventoryClickPlanner.plan(slots, target, pickupAllSafeIdentities);
     }
 
     private static void feedback(Minecraft minecraft, String translationKey) {

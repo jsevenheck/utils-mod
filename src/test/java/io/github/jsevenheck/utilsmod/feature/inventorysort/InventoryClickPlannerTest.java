@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -85,9 +86,52 @@ class InventoryClickPlannerTest {
         assertPlanReachesTarget(current);
     }
 
-    private static void assertPlanReachesTarget(List<SortSlot> current) {
+    @Test
+    void safePickupAllFastPathCollectsManySmallStacks() {
+        List<SortSlot> current = List.of(
+            occupied(0, DIRT, 1),
+            occupied(1, DIRT, 1),
+            occupied(2, DIRT, 1),
+            occupied(3, DIRT, 1),
+            occupied(4, DIRT, 1),
+            occupied(5, DIRT, 1),
+            occupied(6, DIRT, 1),
+            occupied(7, DIRT, 1)
+        );
         List<SortSlot> target = InventorySortPlanner.plan(current);
-        List<ClickOperation> ops = InventoryClickPlanner.plan(current, target);
+        List<ClickOperation> ops = InventoryClickPlanner.plan(current, target, Set.of(DIRT));
+
+        assertEquals(3, ops.size(), "pick up, collect, and place should replace the waterfall");
+        assertEquals(ClickOperation.Kind.PICKUP_ALL, ops.get(1).kind());
+        assertPlanReachesTarget(current, Set.of(DIRT));
+    }
+
+    @Test
+    void pickupAllFallsBackWhenTheGroupDoesNotFitInOneCursorStack() {
+        List<SortSlot> current = List.of(
+            occupied(0, DIRT, 10),
+            occupied(1, DIRT, 10),
+            occupied(2, DIRT, 10),
+            occupied(3, DIRT, 10),
+            occupied(4, DIRT, 10),
+            occupied(5, DIRT, 10),
+            occupied(6, DIRT, 10),
+            occupied(7, DIRT, 10)
+        );
+        List<SortSlot> target = InventorySortPlanner.plan(current);
+        List<ClickOperation> ops = InventoryClickPlanner.plan(current, target, Set.of(DIRT));
+
+        assertTrue(ops.stream().noneMatch(op -> op.kind() == ClickOperation.Kind.PICKUP_ALL));
+        assertPlanReachesTarget(current, Set.of(DIRT));
+    }
+
+    private static void assertPlanReachesTarget(List<SortSlot> current) {
+        assertPlanReachesTarget(current, Set.of());
+    }
+
+    private static void assertPlanReachesTarget(List<SortSlot> current, Set<ItemIdentity> pickupAllSafeIdentities) {
+        List<SortSlot> target = InventorySortPlanner.plan(current);
+        List<ClickOperation> ops = InventoryClickPlanner.plan(current, target, pickupAllSafeIdentities);
 
         Map<Integer, Integer> maxBySlot = new HashMap<>();
         for (SortSlot slot : current) {
@@ -122,6 +166,32 @@ class InventoryClickPlannerTest {
             int slot = op.logicalSlot();
             ItemIdentity slotIdentity = identity.get(slot);
             int slotCount = count.getOrDefault(slot, 0);
+
+            if (op.kind() == ClickOperation.Kind.PICKUP_ALL) {
+                assertTrue(cursorIdentity != null, "PICKUP_ALL requires a non-empty cursor");
+                int cursorCapacity = maxBySlot.get(slot);
+                for (int pass = 0; pass < 2 && cursorCount < cursorCapacity; pass++) {
+                    for (Integer otherSlot : identity.keySet()) {
+                        if (!cursorIdentity.equals(identity.get(otherSlot))) {
+                            continue;
+                        }
+                        if (pass == 0 && count.getOrDefault(otherSlot, 0) >= cursorCapacity) {
+                            continue;
+                        }
+                        int otherCount = count.getOrDefault(otherSlot, 0);
+                        int transferred = Math.min(otherCount, cursorCapacity - cursorCount);
+                        count.put(otherSlot, otherCount - transferred);
+                        cursorCount += transferred;
+                        if (otherCount - transferred == 0) {
+                            identity.put(otherSlot, null);
+                        }
+                        if (cursorCount >= cursorCapacity) {
+                            break;
+                        }
+                    }
+                }
+                continue;
+            }
 
             if (cursorIdentity == null) {
                 cursorIdentity = slotIdentity;

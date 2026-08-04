@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 /**
- * Executes a planned queue of {@link ClickOperation}s against a real menu, one click every
+ * Executes a planned queue of {@link ClickOperation}s against a real menu, one interaction every
  * {@code delayTicks} client ticks, exclusively through {@code MultiPlayerGameMode.handleContainerInput}
  * -- the same client-facing API vanilla screens use, which predicts locally and sends the normal
  * {@code ServerboundContainerClickPacket}, so the server always stays authoritative. This class never
@@ -78,7 +78,10 @@ final class InventoryClickExecutor {
             return true;
         }
 
-        minecraft.gameMode.handleContainerInput(containerId, op.logicalSlot(), 0, ContainerInput.PICKUP, minecraft.player);
+        ContainerInput input = op.kind() == ClickOperation.Kind.PICKUP_ALL
+            ? ContainerInput.PICKUP_ALL
+            : ContainerInput.PICKUP;
+        minecraft.gameMode.handleContainerInput(containerId, op.logicalSlot(), 0, input, minecraft.player);
         index++;
         // A delay of one means one click per client tick. Larger values add ticks between clicks.
         ticksUntilNextClick = delayTicks - 1;

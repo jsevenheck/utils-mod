@@ -1,23 +1,39 @@
 package io.github.jsevenheck.utilsmod.feature.inventorysort;
 
 /**
- * A single planned click on one logical slot, expressed purely in terms of the state it expects to
- * find before it fires. The executor is responsible for validating the real slot/cursor against this
- * expectation immediately before performing the click, and aborting the whole queue on any mismatch.
- * <p>
- * Every click planned by {@link InventoryClickPlanner} is a plain "pickup" style interaction
- * (equivalent to a left mouse click): it either picks the slot's content onto an empty cursor, drops
- * the cursor into an empty slot, merges same-item stacks, or swaps two different stacks — exactly the
- * behavior of the vanilla single-click pickup interaction, so it can always be realized with the
- * normal container click API.
+ * A single planned interaction on one logical slot, expressed in terms of the state it expects to
+ * find before it fires. The executor validates the real slot/cursor immediately before sending it and
+ * aborts the queue on any mismatch.
  *
  * @param logicalSlot               opaque logical slot identifier, matching {@link SortSlot#slotIndex()}
- * @param expectedIdentity          the item expected to occupy the slot before this click, or {@code null}
- *                                  if the slot is expected to be empty
- * @param expectedCount             the stack size expected before this click; {@code 0} when empty
- * @param expectedCursorEmptyBefore whether the cursor is expected to be empty immediately before this click
+ * @param expectedIdentity          the item expected to occupy the slot before this interaction, or
+ *                                  {@code null} if the slot is expected to be empty
+ * @param expectedCount             the stack size expected before this interaction; {@code 0} when empty
+ * @param expectedCursorEmptyBefore whether the cursor is expected to be empty immediately before this interaction
+ * @param kind                       the vanilla interaction to send
  */
-public record ClickOperation(int logicalSlot, ItemIdentity expectedIdentity, int expectedCount, boolean expectedCursorEmptyBefore) {
+public record ClickOperation(int logicalSlot, ItemIdentity expectedIdentity, int expectedCount,
+                             boolean expectedCursorEmptyBefore, Kind kind) {
+
+    public ClickOperation(int logicalSlot, ItemIdentity expectedIdentity, int expectedCount,
+                          boolean expectedCursorEmptyBefore) {
+        this(logicalSlot, expectedIdentity, expectedCount, expectedCursorEmptyBefore, Kind.PICKUP);
+    }
+
+    public ClickOperation {
+        if (kind == null) {
+            throw new IllegalArgumentException("Click kind must not be null");
+        }
+        if (kind == Kind.PICKUP_ALL
+            && (expectedIdentity != null || expectedCount != 0 || expectedCursorEmptyBefore)) {
+            throw new IllegalArgumentException("PICKUP_ALL requires an empty slot and a non-empty cursor");
+        }
+    }
+
+    public enum Kind {
+        PICKUP,
+        PICKUP_ALL
+    }
 
     public boolean expectedSlotEmpty() {
         return expectedIdentity == null;

@@ -37,8 +37,12 @@ support sorting" message, depending on whether *any* part of the open screen is 
 ### How sorting works (and why it's safe)
 
 Minecraft is server-authoritative: the client can't just rearrange items locally. Sorting instead plans
-a queue of ordinary container clicks (the same click primitive vanilla screens use) and plays them back
-a few ticks apart, checking before every click that the slot still contains what the plan expects. If
+a queue of ordinary container interactions (the same click primitives vanilla screens use) and plays
+them back a few ticks apart, checking before every interaction that the slot and cursor still contain
+what the plan expects. For safe groups of several small stacks, it uses vanilla's collect-to-cursor
+interaction to reduce the number of visible moves. This fast path is disabled whenever the same item
+exists outside the section being sorted, because vanilla's collect operation searches the complete
+open menu. Groups that do not fit into one cursor stack use the conservative pickup/merge flow. If
 the screen closes, the container changes, the server corrects something unexpectedly, or your cursor
 state differs from the plan, the sort aborts immediately and sends no further clicks. It does not try
 to force a recovery click in an untrusted menu state; after an abort, check the cursor before continuing.
