@@ -1,4 +1,4 @@
-package io.github.jsevenheck.compasshud.client;
+package io.github.jsevenheck.utilsmod.client.feature.compass;
 
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Camera;

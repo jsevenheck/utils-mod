@@ -8,7 +8,7 @@ Edit `gradle.properties`:
 mod_version=1.0.0
 ```
 
-`build.gradle`'s `processResources` block expands `${version}` into `fabric.mod.json` at build time, and Loom names the output jar after it — so this one line controls both the mod's reported version and the jar filename. Bump it before every release (e.g. `1.0.1`, `1.1.0` — [semantic versioning](https://semver.org/) is the usual convention).
+`build.gradle`'s `processResources` block expands `${version}` into `fabric.mod.json` at build time, and Loom names the output jar `utils-mod-<version>.jar` (the `base { archivesName = "utils-mod" }` in `build.gradle`, independent of the `compass-hud` mod id) — so this one line controls both the mod's reported version and the jar filename. Bump it before every release (e.g. `1.0.1`, `1.1.0` — [semantic versioning](https://semver.org/) is the usual convention).
 
 ## 2. Build
 
@@ -19,8 +19,8 @@ mod_version=1.0.0
 
 This produces two files in `build/libs/`:
 
-- `compass-hud-<version>.jar` — the file to upload as the release. Contains the remapped, ready-to-run mod.
-- `compass-hud-<version>-sources.jar` — optional companion; some platforms let you attach it as a "sources" file for other developers, but it isn't required for players.
+- `utils-mod-<version>.jar` — the file to upload as the release. Contains the remapped, ready-to-run mod.
+- `utils-mod-<version>-sources.jar` — optional companion; some platforms let you attach it as a "sources" file for other developers, but it isn't required for players.
 
 Run `./gradlew clean build` if you want a fully fresh build (clears cached/up-to-date task outputs first).
 
@@ -41,7 +41,7 @@ Run `./gradlew clean build` if you want a fully fresh build (clears cached/up-to
    - Name, summary, description (Markdown/BBCode editor), license, and category (e.g. "HUD / Minimap").
    - Add the icon and a couple of screenshots (an in-game shot of the compass HUD is ideal here).
 3. Upload a file: **Files → Upload a File**.
-   - Upload `compass-hud-<version>.jar` (not the sources jar).
+   - Upload `utils-mod-<version>.jar` (not the sources jar).
    - **Game Versions**: select `26.2` (and the Fabric mod loader entry — CurseForge lists "Fabric" as a loader alongside the Minecraft version).
    - **Release Type**: Release / Beta / Alpha as appropriate.
    - **Relations → Required Dependency**: add **Fabric API**, since this mod depends on it (`fabric-api` in `fabric.mod.json`). Players won't get prompted to install it otherwise.

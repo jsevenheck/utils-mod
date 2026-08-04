@@ -3,7 +3,7 @@
 	"id": "compass-hud",
 	"version": "${version}",
 	"name": "Compass HUD",
-	"description": "Displays a compass at the top of the HUD.",
+	"description": "A client-side utility mod: a compass HUD strip plus a keybind to sort your inventory and nearby chests.",
 	"authors": [
 		"Gromel1"
 	],
@@ -16,10 +16,10 @@
 	"environment": "client",
 	"entrypoints": {
 		"main": [
-			"io.github.jsevenheck.compasshud.CompassHUD"
+			"io.github.jsevenheck.utilsmod.UtilsMod"
 		],
 		"client": [
-			"io.github.jsevenheck.compasshud.client.CompassHUDClient"
+			"io.github.jsevenheck.utilsmod.client.UtilsModClient"
 		]
 	},
 	"mixins": [

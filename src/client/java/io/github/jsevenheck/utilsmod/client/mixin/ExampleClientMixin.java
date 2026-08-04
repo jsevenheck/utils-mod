@@ -1,4 +1,4 @@
-package io.github.jsevenheck.compasshud.client.mixin;
+package io.github.jsevenheck.utilsmod.client.mixin;
 
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;

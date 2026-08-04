@@ -1,4 +1,4 @@
-package io.github.jsevenheck.compasshud;
+package io.github.jsevenheck.utilsmod;
 
 import net.fabricmc.api.ModInitializer;
 
@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CompassHUD implements ModInitializer {
+public class UtilsMod implements ModInitializer {
 	public static final String MOD_ID = "compass-hud";
 
 	// This logger is used to write text to the console and the log file.

@@ -1,0 +1,7 @@
+{
+  "key.compass-hud.sort_inventory": "Sort Inventory",
+  "compass-hud.inventorysort.already_sorted": "Inventory is already sorted",
+  "compass-hud.inventorysort.unsupported_menu": "This menu doesn't support sorting",
+  "compass-hud.inventorysort.cursor_not_empty": "Empty your cursor before sorting",
+  "compass-hud.inventorysort.aborted": "Inventory sort aborted"
+}

@@ -26,6 +26,7 @@ bin/
 .classpath
 .project
 node_modules/
+.claude/settings.local.json
 
 # macos
 

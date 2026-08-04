@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "io.github.jsevenheck.compasshud.mixin",
+	"package": "io.github.jsevenheck.utilsmod.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"ExampleMixin"

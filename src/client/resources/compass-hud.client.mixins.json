@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "io.github.jsevenheck.compasshud.client.mixin",
+	"package": "io.github.jsevenheck.utilsmod.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"ExampleClientMixin"
