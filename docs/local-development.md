@@ -1,6 +1,6 @@
 # Local Development (VS Code)
 
-How to build, run, and debug Compass HUD locally.
+How to build, run, and debug Utils Mod locally.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ From the workspace root:
 ./gradlew runClient       # macOS/Linux
 ```
 
-This compiles the mod, launches the Minecraft client with Compass HUD loaded, and streams logs to the terminal. First launch downloads Minecraft/Fabric artifacts and can take a few minutes; subsequent launches are fast.
+This compiles the mod, launches the Minecraft client with Utils Mod loaded, and streams logs to the terminal. First launch downloads Minecraft/Fabric artifacts and can take a few minutes; subsequent launches are fast.
 
 Other useful tasks:
 

@@ -28,8 +28,8 @@ Run `./gradlew clean build` if you want a fully fresh build (clears cached/up-to
 
 - [ ] Tested the exact built jar (`./gradlew runClient` covers the dev environment; for extra confidence, drop the built jar into a real `.minecraft/mods/` folder with matching Fabric Loader + Fabric API and confirm it loads).
 - [ ] `src/main/resources/fabric.mod.json` fields are accurate and up to date: `version` (auto-filled), `name`, `description`, `authors`, `license`, `contact.homepage`/`contact.sources`.
-  - `contact.sources` currently points at the upstream `FabricMC/fabric-example-mod` template repo — update it to your own repository URL before publishing.
-  - `license` is currently `CC0-1.0`, inherited from the Fabric template. Decide deliberately whether that's the license you actually want for your code (CC0 = public domain / no rights reserved) before you ship — CurseForge asks you to declare a license on the project page too, and it should match.
+  - `contact.sources` points at the project's repository: `https://github.com/jsevenheck/compass-hud-26.2`.
+  - `license` is `CC0-1.0`. Confirm that this is the intended license before publishing; CurseForge asks you to declare a matching project license too.
 - [ ] `depends` in `fabric.mod.json` matches what you actually require: `fabricloader >= 0.19.3`, `minecraft ~26.2`, `java >= 25`, `fabric-api *`. Tighten `fabric-api`'s version range if you rely on APIs added in a specific release.
 - [ ] `icon.png` (`src/main/resources/assets/compass-hud/icon.png`) looks right — this is what shows up as the project/file thumbnail.
 - [ ] No leftover debug logging or test code.

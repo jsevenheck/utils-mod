@@ -1,4 +1,4 @@
-# Compass HUD
+# Utils Mod
 
 A client-side utility mod for Minecraft 26.2, built on Fabric. It currently bundles two independent
 features under one mod (`compass-hud`):
@@ -21,7 +21,7 @@ looking at an inventory, etc.) — it's a safe no-op.
 
 ### Supported
 
-- Your own inventory screen (main inventory + hotbar).
+- Your own inventory screen (main inventory slots only; the hotbar is intentionally excluded).
 - The player-inventory row shown at the bottom of a container screen.
 - Standard chest-like storage: chests (including double chests), hoppers, dispensers/droppers, and
   shulker boxes.
@@ -40,10 +40,10 @@ Minecraft is server-authoritative: the client can't just rearrange items locally
 a queue of ordinary container clicks (the same click primitive vanilla screens use) and plays them back
 a few ticks apart, checking before every click that the slot still contains what the plan expects. If
 the screen closes, the container changes, the server corrects something unexpectedly, or your cursor
-ends up holding an item it shouldn't, the sort aborts immediately rather than risking item loss — it
-never leaves an item stuck on your cursor. You'll see a message if sorting can't start (menu not
-supported, cursor not empty) or gets aborted partway through; if your inventory is already sorted,
-nothing visibly happens.
+state differs from the plan, the sort aborts immediately and sends no further clicks. It does not try
+to force a recovery click in an untrusted menu state; after an abort, check the cursor before continuing.
+You'll see a message if sorting can't start (menu not supported, cursor not empty) or gets aborted
+partway through; if your inventory is already sorted, nothing visibly happens.
 
 ### Configuration
 
@@ -84,4 +84,4 @@ For setup instructions, please see the [Fabric Documentation page](https://docs.
 
 ## License
 
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+This project is licensed under CC0-1.0.

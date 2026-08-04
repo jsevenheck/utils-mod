@@ -2,14 +2,14 @@
 	"schemaVersion": 1,
 	"id": "compass-hud",
 	"version": "${version}",
-	"name": "Compass HUD",
+	"name": "Utils Mod",
 	"description": "A client-side utility mod: a compass HUD strip plus a keybind to sort your inventory and nearby chests.",
 	"authors": [
 		"Gromel1"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/jsevenheck/compass-hud-26.2",
+		"sources": "https://github.com/jsevenheck/compass-hud-26.2"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/compass-hud/icon.png",

@@ -43,7 +43,7 @@ CI (`.github/workflows/build.yml`) runs `./gradlew build` on Ubuntu 24.04 with J
 - `processResources` expands `${version}` inside `fabric.mod.json`.
 - `java { withSourcesJar() }` + `maven-publish` for publishing.
 - `repositories { mavenCentral() }` was added (alongside the Fabric/Loom defaults) specifically so the JUnit test dependencies resolve.
-- `base { archivesName = "utils-mod" }` names the built jar `utils-mod-<version>.jar` — independent of, and does not change, the `compass-hud` mod id (`rootProject.name` in `settings.gradle`, `"id"` in `fabric.mod.json`).
+- `base { archivesName = "utils-mod" }` names the built jar `utils-mod-<version>.jar` — independent of, and does not change, the `compass-hud` mod id (`"id"` in `fabric.mod.json`).
 - `test { useJUnitPlatform() }`; `testRuntimeOnly "org.junit.platform:junit-platform-launcher"` is required in Gradle 9's `jvm-test-suite` setup or the `test` task fails with "Failed to load JUnit Platform" even though `junit-jupiter` alone looks sufficient.
 
 ## Architecture
@@ -134,7 +134,7 @@ Rules:
 ## Inventory Sort feature
 
 - Split the same way as everything else: `feature/inventorysort/` in `src/main` is pure planning logic with **no Minecraft imports at all** (unit-tested directly in `src/test`); `client/feature/inventorysort/` in `src/client` is the thin Minecraft-facing glue that feeds it real data and plays back its output as real clicks.
-- **Trigger**: `InventorySortFeature` registers one rebindable `KeyMapping` (default `R`, vanilla `KeyMapping.Category.INVENTORY`) via `fabric-key-mapping-api-v1`, and drives everything from `ClientTickEvents.END_CLIENT_TICK` (`fabric-lifecycle-events-v1`) — `sortKey.consumeClick()` gives the debounced "one trigger per physical press" behavior for free.
+- **Trigger**: `InventorySortFeature` registers one rebindable `KeyMapping` (default `R`, vanilla `KeyMapping.Category.INVENTORY`) via `fabric-key-mapping-api-v1`, and drives everything from `ClientTickEvents.END_CLIENT_TICK` (`fabric-lifecycle-events-v1`). Outside screens, `sortKey.consumeClick()` provides the debounced trigger; while an inventory/container screen has focus, `ScreenKeyboardEvents.afterKeyPress` captures the bound key and hands the pending trigger to the same tick handler.
 - **Resolution** (`SortableSlotResolver`): identifies sortable slots purely from live menu/slot metadata and ownership, never hardcoded slot indices. Only `InventoryMenu` (the player's own screen) and a small chest-like menu-class allowlist (`ChestMenu`, `HopperMenu`, `DispenserMenu`, `ShulkerBoxMenu`) are recognized at all — every other menu type (crafting, furnace, anvil, enchanting, brewing, beacon, merchant, loom, stonecutter, cartography, smithing, grindstone, creative inventory, ...) is simply absent from the allowlist and therefore untouched. Within a recognized menu, player-inventory slots are those whose backing `container` is the player's own `Inventory`, whose `getContainerSlot()` is 9–35 (main inventory only; the hotbar is always excluded), and whose class is exactly `Slot.class`. Container-side slots require `getClass() == Slot.class` or `ShulkerBoxSlot.class` and a `container` different from the player's inventory. Spectators and null player/screen bail out immediately.
 - **Planning** is two pure, independently unit-tested stages operating on an immutable snapshot (`List<SortSlot>`), never the live menu:
   1. `InventorySortPlanner.plan(List<SortSlot>)` — groups by `ItemIdentity`, sums counts, sorts identities via `ItemIdentity.compare` (namespace → path → component key → custom name), consolidates each identity into as few slots as possible (capped by the *minimum* max-stack-size observed among that identity's occupied slots, so an item somehow already split with different caps never over-fills a smaller-cap slot), then fills the rest with empty `SortSlot`s. No-op (`plan(x)` reproduces the same order) when the input is already sorted.
@@ -153,7 +153,7 @@ Rules:
 ## Adding a Mixin / Feature
 
 - New feature → create `feature/<name>/` (pure logic, if any, in `src/main`) and `client/feature/<name>/` (a `ModFeature` implementation plus any Minecraft-facing glue) and add it to `FeatureRegistry`'s list.
-- New mixin → put the class in the matching package (`...compasshud.mixin` for common, `...compasshud.client.mixin` for client-only) and register it in the corresponding config file. Prefer a Fabric API event first; only reach for a mixin if there truly is no event/API alternative.
+- New mixin → put the class in the matching package (`...utilsmod.mixin` for common, `...utilsmod.client.mixin` for client-only) and register it in the corresponding config file. Prefer a Fabric API event first; only reach for a mixin if there truly is no event/API alternative.
 - New entrypoint or dependency → update `fabric.mod.json` (`entrypoints` / `depends`).
 - New assets (icons, textures, lang) → `src/main/resources/assets/compass-hud/`.
 - Version bumps (Minecraft, loader, API, mod version) → `gradle.properties`.

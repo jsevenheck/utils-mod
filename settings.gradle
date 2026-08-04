@@ -9,5 +9,5 @@ pluginManagement {
 	}
 }
 
-// Should match your modid
-rootProject.name = 'compass-hud'
+// The repository/project name is separate from the backwards-compatible Fabric mod id.
+rootProject.name = 'utils-mods'

@@ -6,7 +6,7 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-// The mod id ("compass-hud", see settings.gradle / fabric.mod.json) stays as-is, but the built jar
+// The mod id ("compass-hud", see fabric.mod.json) stays as-is, but the built jar
 // itself is named after the project's current scope (a general client-side utils mod, not just the
 // compass feature).
 base {

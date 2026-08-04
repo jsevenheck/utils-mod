@@ -67,7 +67,7 @@ public final class ModConfig {
                 if (loaded != null) {
                     return loaded;
                 }
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 UtilsMod.LOGGER.warn("Failed to load config from {}, using defaults", PATH, e);
             }
         }
