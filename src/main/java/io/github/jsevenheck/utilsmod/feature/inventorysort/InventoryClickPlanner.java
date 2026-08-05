@@ -44,22 +44,55 @@ public final class InventoryClickPlanner {
      */
     public static List<ClickOperation> plan(List<SortSlot> current, List<SortSlot> target,
                                             Set<ItemIdentity> pickupAllSafeIdentities) {
+        validateSnapshots(current, target);
+
         Map<Integer, Cell> state = new HashMap<>();
         Map<Integer, Integer> maxBySlot = new HashMap<>();
         for (SortSlot slot : current) {
             state.put(slot.slotIndex(), new Cell(slot.identity(), slot.count()));
             maxBySlot.put(slot.slotIndex(), slot.maxStackSize());
         }
-        if (state.size() != target.size()) {
-            throw new IllegalArgumentException("current and target must describe the same set of slots");
-        }
-
         List<ClickOperation> ops = new ArrayList<>();
 
         consolidate(current, state, maxBySlot, ops, pickupAllSafeIdentities);
         permute(state, target, maxBySlot, ops);
 
         return ops;
+    }
+
+    private static void validateSnapshots(List<SortSlot> current, List<SortSlot> target) {
+        if (current.size() != target.size()) {
+            throw new IllegalArgumentException("current and target must describe the same set of slots");
+        }
+
+        Map<Integer, SortSlot> currentBySlot = indexBySlot(current, "current");
+        Map<Integer, SortSlot> targetBySlot = indexBySlot(target, "target");
+        if (!currentBySlot.keySet().equals(targetBySlot.keySet())) {
+            throw new IllegalArgumentException("current and target must describe the same set of slots");
+        }
+        if (!itemTotals(current).equals(itemTotals(target))) {
+            throw new IllegalArgumentException("current and target must describe the same item totals");
+        }
+    }
+
+    private static Map<Integer, SortSlot> indexBySlot(List<SortSlot> slots, String snapshotName) {
+        Map<Integer, SortSlot> bySlot = new HashMap<>();
+        for (SortSlot slot : slots) {
+            if (bySlot.put(slot.slotIndex(), slot) != null) {
+                throw new IllegalArgumentException(snapshotName + " contains duplicate slot index " + slot.slotIndex());
+            }
+        }
+        return bySlot;
+    }
+
+    private static Map<ItemIdentity, Long> itemTotals(List<SortSlot> slots) {
+        Map<ItemIdentity, Long> totals = new HashMap<>();
+        for (SortSlot slot : slots) {
+            if (!slot.isEmpty()) {
+                totals.merge(slot.identity(), (long) slot.count(), Math::addExact);
+            }
+        }
+        return totals;
     }
 
     // ---- Phase 1: consolidation -------------------------------------------------------------
@@ -257,7 +290,8 @@ public final class InventoryClickPlanner {
             ContentKey key = keyOf(destSlot);
             Deque<Integer> candidates = bySourceKey.get(key);
             if (candidates == null || candidates.isEmpty()) {
-                throw new IllegalStateException("current and target describe different item totals for " + key);
+                throw new IllegalArgumentException(
+                    "target stack layout is incompatible with the consolidated current snapshot for " + key);
             }
             wantsSourceOf.put(destSlot.slotIndex(), candidates.poll());
         }

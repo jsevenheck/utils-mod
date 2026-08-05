@@ -1,8 +1,8 @@
 {
   "src/client/java/io/github/jsevenheck/utilsmod/client/UtilsModClient.java": {
-    "mtime": 1785883020.88078,
-    "ast_hash": "79ee34dc7dd441076aa6c82c15bf399e",
-    "semantic_hash": "79ee34dc7dd441076aa6c82c15bf399e"
+    "mtime": 1785887735.5435839,
+    "ast_hash": "dc892dd1192105701753563d741417c8",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/config/ModConfig.java": {
     "mtime": 1785886366.3108928,
@@ -15,9 +15,9 @@
     "semantic_hash": "6be9cbc066b97b03c0190701e92159ca"
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/ModFeature.java": {
-    "mtime": 1785883020.88378,
-    "ast_hash": "a431c6002a14b2d659fc39414aed2d8f",
-    "semantic_hash": "a431c6002a14b2d659fc39414aed2d8f"
+    "mtime": 1785887738.0995164,
+    "ast_hash": "db1e8f2dd8a4e510fc50600be48f0148",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassHudFeature.java": {
     "mtime": 1785883020.88378,
@@ -25,9 +25,9 @@
     "semantic_hash": "3c675faa09276de252eb5bb49160822f"
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassHudRenderer.java": {
-    "mtime": 1785883020.88478,
-    "ast_hash": "fc186e5cbaff1db4d97aadf3fea760a9",
-    "semantic_hash": "fc186e5cbaff1db4d97aadf3fea760a9"
+    "mtime": 1785920718.6052737,
+    "ast_hash": "412f5f9252b2d9d7f9e40a7db051d76e",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/InventoryClickExecutor.java": {
     "mtime": 1785884594.3498416,
@@ -45,9 +45,9 @@
     "semantic_hash": "723d281b760a1cb9c5a6bb5c2a4b1e93"
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/ItemIdentities.java": {
-    "mtime": 1785883020.88778,
-    "ast_hash": "a9651a125e70cad6751f1216657f9d2b",
-    "semantic_hash": "a9651a125e70cad6751f1216657f9d2b"
+    "mtime": 1785921341.6939473,
+    "ast_hash": "61b2661f8c77797b7526fc675caef345",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/SortSession.java": {
     "mtime": 1785884587.876759,
@@ -58,11 +58,6 @@
     "mtime": 1785883020.88878,
     "ast_hash": "702056518e7ed0dbb79337be3e903e7c",
     "semantic_hash": "702056518e7ed0dbb79337be3e903e7c"
-  },
-  "src/client/java/io/github/jsevenheck/utilsmod/client/mixin/ExampleClientMixin.java": {
-    "mtime": 1785883020.88978,
-    "ast_hash": "d64dfa78678311b5c9d125d0bef15b46",
-    "semantic_hash": "d64dfa78678311b5c9d125d0bef15b46"
   },
   "src/main/java/io/github/jsevenheck/utilsmod/UtilsMod.java": {
     "mtime": 1785883020.8937805,
@@ -75,9 +70,9 @@
     "semantic_hash": "8c2e01d183cd4b4b2bc24f590081fda4"
   },
   "src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/InventoryClickPlanner.java": {
-    "mtime": 1785884925.3712254,
-    "ast_hash": "3ef340ad1aaa23017e8ea00fd0e244f6",
-    "semantic_hash": "3ef340ad1aaa23017e8ea00fd0e244f6"
+    "mtime": 1785921241.4225664,
+    "ast_hash": "3cf38f408e0734c105fcf5ed461d27e0",
+    "semantic_hash": ""
   },
   "src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/InventorySortPlanner.java": {
     "mtime": 1785883020.8962896,
@@ -94,15 +89,10 @@
     "ast_hash": "db9d709f6506428bfbe118070ad03334",
     "semantic_hash": "db9d709f6506428bfbe118070ad03334"
   },
-  "src/main/java/io/github/jsevenheck/utilsmod/mixin/ExampleMixin.java": {
-    "mtime": 1785883020.89829,
-    "ast_hash": "aea7db78fe748afbe0ad6d9fbdfeaa8e",
-    "semantic_hash": "aea7db78fe748afbe0ad6d9fbdfeaa8e"
-  },
   "src/test/java/io/github/jsevenheck/utilsmod/feature/inventorysort/InventoryClickPlannerTest.java": {
-    "mtime": 1785884855.2488573,
-    "ast_hash": "5bef8229ca2fe7504d9d9aaf18ddbf25",
-    "semantic_hash": "5bef8229ca2fe7504d9d9aaf18ddbf25"
+    "mtime": 1785920744.2726355,
+    "ast_hash": "e176d7d9622598812976ccce2945a99c",
+    "semantic_hash": ""
   },
   "src/test/java/io/github/jsevenheck/utilsmod/feature/inventorysort/InventorySortPlannerTest.java": {
     "mtime": 1785883020.9068618,
@@ -110,24 +100,24 @@
     "semantic_hash": "d65eb93d154a0715e44fcf5417ba6057"
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleFeature.java": {
-    "mtime": 1785886881.9858532,
-    "ast_hash": "202b78dc4dbffc85de2f1212ed1aacc5",
-    "semantic_hash": "202b78dc4dbffc85de2f1212ed1aacc5"
+    "mtime": 1785887521.5556479,
+    "ast_hash": "120ebcb9b6cf62739f58a20bc603faa8",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleInteractionExecutor.java": {
-    "mtime": 1785887016.1340494,
-    "ast_hash": "1048b1d604cba980fce48599b29ec286",
-    "semantic_hash": "1048b1d604cba980fce48599b29ec286"
+    "mtime": 1785887513.5506518,
+    "ast_hash": "6bc3ec98a8dbe1c1206813adf858af4a",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleInteractionPlanner.java": {
-    "mtime": 1785887000.2496781,
-    "ast_hash": "3404ca8fe9740640188052cb3f49143f",
-    "semantic_hash": "3404ca8fe9740640188052cb3f49143f"
+    "mtime": 1785887366.3888304,
+    "ast_hash": "731f8996fcd6f387e31a66e1bf41d03f",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleScreen.java": {
-    "mtime": 1785886619.0032222,
-    "ast_hash": "584552c4277ccb6a0bdb2484c17003ac",
-    "semantic_hash": "584552c4277ccb6a0bdb2484c17003ac"
+    "mtime": 1785887369.0644207,
+    "ast_hash": "d3b6bcaad529c60717c469a9ec0d61d5",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/mixin/AbstractContainerScreenAccessor.java": {
     "mtime": 1785886876.7026353,
@@ -143,5 +133,10 @@
     "mtime": 1785887093.721588,
     "ast_hash": "a15a5104cfd1f6063f9aef4be3b57b84",
     "semantic_hash": "a15a5104cfd1f6063f9aef4be3b57b84"
+  },
+  "src/test/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/ItemIdentitiesTest.java": {
+    "mtime": 1785921341.6939473,
+    "ast_hash": "ba5f46ef0eb87678e6bc781eb9da734d",
+    "semantic_hash": ""
   }
 }

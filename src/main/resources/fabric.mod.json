@@ -8,8 +8,8 @@
 		"Gromel1"
 	],
 	"contact": {
-		"homepage": "https://github.com/jsevenheck/compass-hud-26.2",
-		"sources": "https://github.com/jsevenheck/compass-hud-26.2"
+		"homepage": "https://github.com/jsevenheck/utils-mod",
+		"sources": "https://github.com/jsevenheck/utils-mod"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/compass-hud/icon.png",
@@ -23,7 +23,6 @@
 		]
 	},
 	"mixins": [
-		"compass-hud.mixins.json",
 		{
 			"config": "compass-hud.client.mixins.json",
 			"environment": "client"

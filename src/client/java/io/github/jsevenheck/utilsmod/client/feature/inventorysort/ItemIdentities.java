@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /** Converts real {@link ItemStack}s into the pure, Minecraft-independent {@link ItemIdentity} model. */
@@ -33,12 +34,16 @@ final class ItemIdentities {
      * resulting strings are sorted before joining.
      */
     private static String componentKey(ItemStack stack) {
-        DataComponentPatch patch = stack.getComponentsPatch();
+        return componentKey(stack.getComponentsPatch(), ItemIdentities::componentTypeKey);
+    }
+
+    static String componentKey(DataComponentPatch patch,
+                               Function<DataComponentType<?>, String> typeKey) {
         if (patch.isEmpty()) {
             return "";
         }
         List<String> parts = patch.entrySet().stream()
-            .map(entry -> componentTypeKey(entry.getKey()) + "=" + entry.getValue().map(Object::toString).orElse("<removed>"))
+            .map(entry -> typeKey.apply(entry.getKey()) + "=" + entry.getValue().map(Object::toString).orElse("<removed>"))
             .sorted()
             .collect(Collectors.toList());
         return String.join(";", parts);

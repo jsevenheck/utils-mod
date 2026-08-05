@@ -10,4 +10,4 @@ pluginManagement {
 }
 
 // The repository/project name is separate from the backwards-compatible Fabric mod id.
-rootProject.name = 'utils-mods'
+rootProject.name = 'utils-mod'

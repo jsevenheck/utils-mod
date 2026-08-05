@@ -61,6 +61,7 @@ public final class CompassHudRenderer implements HudElement {
 	private static final int WAYPOINT_ARROW_HEIGHT = 5;
 	private static final int WAYPOINT_ARROW_X_OFFSET = 1;
 	private static final int WAYPOINT_ARROW_Y_OFFSET = 6;
+	// Version-coupled vanilla assets; verify these LocatorBar sprite ids when updating Minecraft.
 	private static final Identifier WAYPOINT_ARROW_UP = Identifier.withDefaultNamespace("hud/locator_bar_arrow_up");
 	private static final Identifier WAYPOINT_ARROW_DOWN = Identifier.withDefaultNamespace("hud/locator_bar_arrow_down");
 

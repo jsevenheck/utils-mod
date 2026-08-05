@@ -9,6 +9,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -48,6 +49,28 @@ class InventoryClickPlannerTest {
         List<SortSlot> current = List.of(empty(0), empty(1));
         List<ClickOperation> ops = InventoryClickPlanner.plan(current, current);
         assertTrue(ops.isEmpty());
+    }
+
+    @Test
+    void rejectsSnapshotsWithDifferentItemTotalsBeforePlanning() {
+        List<SortSlot> current = List.of(occupied(0, DIRT, 1), empty(1));
+        List<SortSlot> target = List.of(occupied(0, DIRT, 2), empty(1));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> InventoryClickPlanner.plan(current, target));
+
+        assertEquals("current and target must describe the same item totals", exception.getMessage());
+    }
+
+    @Test
+    void rejectsSnapshotsWithDifferentSlotSetsBeforePlanning() {
+        List<SortSlot> current = List.of(occupied(0, DIRT, 1), empty(1));
+        List<SortSlot> target = List.of(occupied(0, DIRT, 1), empty(2));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> InventoryClickPlanner.plan(current, target));
+
+        assertEquals("current and target must describe the same set of slots", exception.getMessage());
     }
 
     @Test

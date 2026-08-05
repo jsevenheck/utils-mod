@@ -6,9 +6,9 @@ HUD strip, inventory sorting, and an improved Bundle UI — organized as self-co
 shared entrypoint.
 
 ```text
-src/main/        <- common mod code: ModInitializer entrypoint, feature-agnostic pure logic, common mixins
+src/main/        <- common mod code: ModInitializer entrypoint and feature-agnostic pure logic
 src/client/      <- client-only code: feature registry + implementations, HUD rendering, ClientModInitializer, client mixins
-src/test/        <- JUnit 5 tests for the Minecraft-independent pure logic in src/main
+src/test/        <- JUnit 5 tests for pure logic and focused Minecraft adapter behavior
 ```
 
 The mod is **client-only** (`"environment": "client"` in `fabric.mod.json`) and runs inside the Minecraft client via Fabric Loader. It has no standalone runtime or toolchain — it only works inside the game, and it is never required server-side.
@@ -32,7 +32,7 @@ CI (`.github/workflows/build.yml`) runs `./gradlew build` on Ubuntu 24.04 with J
 - Minecraft 26.2 · Fabric Loader 0.19.3 · Fabric API `0.156.0+26.2`
 - Fabric Loom `1.17-SNAPSHOT` (Gradle plugin `net.fabricmc.fabric-loom`)
 - Split source sets (`splitEnvironmentSourceSets()`): `src/main` + `src/client`
-- Mixins (SpongePowered) with separate common and client configs — the Bundle opening hit-test uses one client accessor mixin because the vanilla GUI origin is protected; otherwise prefer Fabric API events first
+- Mixins (SpongePowered) with a client config — the Bundle opening hit-test uses one accessor mixin because the vanilla GUI origin is protected; otherwise prefer Fabric API events first
 - SLF4J for logging; JUnit 5 (`junit-bom`/`junit-jupiter`/`junit-platform-launcher`) for `src/test`; Gson (bundled with the game) for config persistence — no new runtime dependencies were added for any of this
 - All versions/pins live in `gradle.properties`
 
@@ -52,7 +52,6 @@ CI (`.github/workflows/build.yml`) runs `./gradlew build` on Ubuntu 24.04 with J
 src/
   main/java/io/github/jsevenheck/utilsmod/
     UtilsMod.java             <- ModInitializer entrypoint; MOD_ID, LOGGER, Identifier helper (whole-mod, not feature-specific)
-    mixin/ExampleMixin.java
     feature/inventorysort/         <- pure, Minecraft-independent inventory-sort planning logic (unit-tested from src/test)
       ItemIdentity.java              <- record: namespace/path/componentKey/customName + deterministic compare()
       SortSlot.java                   <- record: logical slot + identity + count + max stack size
@@ -61,7 +60,6 @@ src/
       InventoryClickPlanner.java      <- (current, target) -> List<ClickOperation> (consolidate + permute)
   main/resources/
     fabric.mod.json               <- mod metadata, entrypoints, mixins, dependencies
-    compass-hud.mixins.json       <- common mixin config
     assets/compass-hud/icon.png
     assets/compass-hud/lang/      <- en_us.json, de_de.json
   client/java/io/github/jsevenheck/utilsmod/client/
@@ -85,13 +83,14 @@ src/
       BundleInteractionPlanner.java  <- validated vanilla click sequences for extraction/insertion
       BundleInteractionExecutor.java <- tick-paced execution against the real InventoryMenu
     mixin/AbstractContainerScreenAccessor.java <- client GUI-origin accessor for opening hit-tests
-    mixin/ExampleClientMixin.java
   client/resources/
     compass-hud.client.mixins.json  <- client mixin config
-  test/java/io/github/jsevenheck/utilsmod/feature/inventorysort/
-    InventorySortPlannerTest.java   <- unit tests for the sort planner
-    InventoryClickPlannerTest.java  <- unit tests for the click planner, with a from-scratch click simulator
-    InventoryOperationLockTest.java <- shared sort/Bundle-operation exclusion tests
+  test/java/io/github/jsevenheck/utilsmod/
+    client/feature/inventorysort/ItemIdentitiesTest.java <- component-patch key determinism tests
+    feature/inventorysort/
+      InventorySortPlannerTest.java   <- unit tests for the sort planner
+      InventoryClickPlannerTest.java  <- unit tests for the click planner, with a from-scratch click simulator
+    feature/InventoryOperationLockTest.java <- shared sort/Bundle-operation exclusion tests
 ```
 
 The `io.github.jsevenheck.utilsmod` package (both source sets) is the only base package in this project. Everything feature-specific goes under a `feature/<name>/` subpackage of it (with the pure/testable half in `src/main` and the Minecraft-facing half in `src/client`); there's no other place to route new code.
@@ -114,16 +113,15 @@ The `io.github.jsevenheck.utilsmod` package (both source sets) is the only base 
 
 ### Mixin configs
 
-| Config file | Package | Example target |
-| ----------- | ------- | -------------- |
-| `compass-hud.mixins.json` | `io.github.jsevenheck.utilsmod.mixin` | `MinecraftServer.loadLevel` |
-| `compass-hud.client.mixins.json` | `io.github.jsevenheck.utilsmod.client.mixin` | `Minecraft.run` |
+| Config file | Package | Target |
+| ----------- | ------- | ------ |
+| `compass-hud.client.mixins.json` | `io.github.jsevenheck.utilsmod.client.mixin` | `AbstractContainerScreen` GUI-origin fields |
 
 Rules:
 - Every mixin class must be registered in its config file or it will not load.
 - `injectors.defaultRequire = 1` — injections must resolve or the game fails to load.
 - `overwrites.requireAnnotations = true` — all overrides must carry the required annotations.
-- Neither feature currently needs a mixin — both are built entirely on public Fabric API + client tick events. Only add a mixin if there's truly no event/API alternative.
+- Only the Bundle feature currently needs a mixin: the accessor exposes the protected GUI origin for opening hit-tests. The other features use public Fabric API events. Only add another mixin if there's truly no event/API alternative.
 
 ## HUD / Rendering (Compass HUD feature)
 
@@ -150,7 +148,7 @@ Rules:
 - **Execution** (`InventoryClickExecutor`, driven by `InventorySortController` from the same tick handler): plays back at most one `ClickOperation` per client tick by default (`clickDelayTicks = 1`; larger values add ticks between interactions), exclusively through `Minecraft.gameMode.handleContainerInput(...)` with either `ContainerInput.PICKUP` or the guarded `ContainerInput.PICKUP_ALL` — the same client-facing API vanilla screens use (predicts locally, sends the normal server packet) — never mutating menu/slot state directly. Before every interaction it re-validates the real slot/cursor against the operation's expectations and that the screen/menu/`containerId` haven't changed and the player/level still exist; any mismatch aborts the remaining queue immediately. A run only reports success if the cursor is empty once the queue is exhausted. Starting a new sort requires an empty cursor and no sort already in progress (`InventorySortController` holds at most one active `InventoryClickExecutor`).
 - **Feedback**: `LocalPlayer.sendOverlayMessage(Component.translatable(...))` only (action-bar, local-only, never sent to server/chat), for: unsupported menu, cursor not empty, already sorted, and aborted. No "sort started" message — the visible rearrangement is its own feedback and the spec explicitly asked to keep this unobtrusive. Translation keys live in `assets/compass-hud/lang/{en_us,de_de}.json`.
 - **Config** (`ModConfig`, all client-only, all in `config/compass-hud.json`): `inventorySortEnabled`, `sortSectionsIndependently` (default `true` — never redistributes items between an open container and the player's own inventory unless the user opts into `false`), `clickDelayTicks` (default `1`, clamped to a minimum of 1 via `effectiveClickDelayTicks()`), `bundleUiEnabled`, and `bundleUiShiftRightClick`. The sorter never includes the hotbar; the Bundle UI deliberately includes the hotbar because Bundles there are supported.
-- **Tests** (`src/test/.../feature/inventorysort/`): `InventorySortPlannerTest` covers empty inventory, already-sorted, mixed identifiers, multi-partial-stack consolidation, same-item-different-components (not merged), non-stackable items, a full inventory with no spare slots, excluded slots never reaching the planner, and deterministic output across runs. `InventoryClickPlannerTest` replays every produced `ClickOperation` through a hand-written simulator of vanilla pickup/merge/swap semantics and asserts each operation's expectations hold, the cursor starts/ends empty, and the final state matches the target exactly — including the full-inventory reorder and same-identity/different-count swap cases.
+- **Tests** (`src/test/java/io/github/jsevenheck/utilsmod/`): `InventorySortPlannerTest` covers empty inventory, already-sorted, mixed identifiers, multi-partial-stack consolidation, same-item-different-components (not merged), non-stackable items, a full inventory with no spare slots, excluded slots never reaching the planner, and deterministic output across runs. `InventoryClickPlannerTest` replays every produced `ClickOperation` through a hand-written simulator of vanilla pickup/merge/swap semantics and asserts each operation's expectations hold, the cursor starts/ends empty, and the final state matches the target exactly — including the full-inventory reorder and same-identity/different-count swap cases. `ItemIdentitiesTest` verifies that `DataComponentPatch` entries produce deterministic, order-independent discriminator keys.
 
 ## Improved Bundle UI
 
@@ -171,7 +169,7 @@ Rules:
 ## Adding a Mixin / Feature
 
 - New feature → create `feature/<name>/` (pure logic, if any, in `src/main`) and `client/feature/<name>/` (a `ModFeature` implementation plus any Minecraft-facing glue) and add it to `FeatureRegistry`'s list.
-- New mixin → put the class in the matching package (`...utilsmod.mixin` for common, `...utilsmod.client.mixin` for client-only) and register it in the corresponding config file. Prefer a Fabric API event first; only reach for a mixin if there truly is no event/API alternative.
+- New mixin → put client-only accessors/injections in `...utilsmod.client.mixin` and register them in `compass-hud.client.mixins.json`. Add a common package/config only if common-side behavior truly requires one. Prefer a Fabric API event first; only reach for a mixin if there truly is no event/API alternative.
 - New entrypoint or dependency → update `fabric.mod.json` (`entrypoints` / `depends`).
 - New assets (icons, textures, lang) → `src/main/resources/assets/compass-hud/`.
 - Version bumps (Minecraft, loader, API, mod version) → `gradle.properties`.
