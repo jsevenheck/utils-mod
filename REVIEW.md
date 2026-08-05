@@ -14,17 +14,17 @@
 | Doku-Vollständigkeit (CLAUDE.md / README / AGENTS) | ✅ PASS | 24 KB CLAUDE.md ist außergewöhnlich detailliert; das ist das Lastenheft |
 | Architektur-Invariants (CLAUDE.md vs. Realität) | ⚠️ MIXED | 3 dokumentierte Invariants halten, 2 verletzt (to­te Mixins) |
 | Pure-Logic-Isolation (`src/main` ohne `net.minecraft.*`) | ⚠️ NIT | `UtilsMod` und `ExampleMixin` importieren `net.minecraft.*` — beide aber non-client-Klassen; **kein** `client.*` |
-| Tests vorhanden | ✅ PASS | 3 Test-Klassen, 14 Test-Methoden, alle im JUnit-5-Stil, gut strukturiert |
-| Tests ausgeführt | ❌ NOT RUN | Java 25 nicht installiert; siehe "What I did NOT run" |
-| Gradle-Build | ❌ NOT RUN | Java 25 nicht installiert |
+| Test-Suite vorhanden | ✅ PASS | 3 Test-Klassen, **18 Test-Methoden**, alle im JUnit-5-Stil, gut strukturiert |
+| Tests ausgeführt | ✅ PASS | **18/18 grün**, 0 Failures, 0 Errors, 0 Skipped (siehe "Test-Suite") |
+| Gradle-Build | ✅ PASS | `BUILD SUCCESSFUL in 7s`, JAR `utils-mod-1.0.0.jar` (77 KB) gebaut |
 | Lizenz-Konsistenz | ✅ PASS | LICENSE-Datei, `fabric.mod.json:14`, `README.md:117` alle CC0-1.0 |
 | Metadaten-Konsistenz (Repo-Name, Mod-Id, Author) | ❌ FAIL | 3 Inkonsistenzen: `settings.gradle` Plural, Author-Name, contact-URLs |
 | Public-API-Drift (CLAUDE.md API-Beschreibung) | ✅ PASS | Stimmt mit Code überein |
 | Best-Practices-Compliance (Fabric/Fabric-Loom 2026) | ✅ MOSTLY | `defaultRequire=1` + `requireAnnotations=true` wie empfohlen, `splitEnvironmentSourceSets` korrekt, `processResources` expandiert `${version}` |
 
-**Verdict:** Repo ist **strukturell sehr sauber** — durchdachte Pure-Logic/Client-Split, defensive Compact-Constructor-Validierung, korrekte Union-Find-Permutation, gute Test-Isolation. Die Hauptprobleme sind **dokumentarisch** (Metadaten-Drift nach Repo-Umbenennung) und **kosmetisch** (zwei ungelöschte Template-Mixins). Ein **möglicher Test-vs-Production-Inkonsistenz** bei PICKUP_ALL-Semantik sollte man genauer prüfen, ist aber durch das `pickupAllSafeIdentities`-Filter eh abgesichert.
+**Verdict:** Repo ist **strukturell sehr sauber** — durchdachte Pure-Logic/Client-Split, defensive Compact-Constructor-Validierung, korrekte Union-Find-Permutation, gute Test-Isolation. Die Hauptprobleme sind **dokumentarisch** (3 Metadaten-Drift-Findings: F-1, F-3, F-8) und **kosmetisch** (zwei ungelöschte Template-Mixins: F-4). Build und Tests sind **nachweislich grün** (18/18, JAR 77 KB).
 
-**Empfehlung:** Issues der Reihe nach fixen — `settings.gradle` Plural → Singular, `fabric.mod.json` Author/URLs → `jsevenheck`, `ExampleMixin` und `ExampleClientMixin` löschen (oder mit echtem Inhalt füllen). Build mit Java 25 lokal verifizieren. Tests grün → pushen.
+**Empfehlung:** Issues der Reihe nach fixen — `settings.gradle` Plural → Singular, `fabric.mod.json` Contact-URLs → `jsevenheck/utils-mod`, `ExampleMixin` und `ExampleClientMixin` löschen (oder mit echtem Inhalt füllen).
 
 ---
 
@@ -37,10 +37,23 @@
 | Disk | 158 GiB free on `/opt/data` | `df -h` |
 | Java available | OpenJDK Temurin **17.0.14** (default) | `java -version` |
 | Java required by repo | **Java 25** (`options.release = 25`, `compatibilityLevel: "JAVA_25"`, `fabric.mod.json: depends.java: ">=25"`) | `build.gradle:64,73-74`, `compass-hud.mixins.json:4`, `fabric.mod.json:35` |
-| Gradle | not in PATH, will be auto-downloaded by `./gradlew` | `which gradle` |
+| Java 25 installiert via | User-mode Tarball von `https://download.java.net/java/GA/jdk25/...` (222 MB) → `/opt/data/jdk-25/` | `tar -xzf … -C /opt/data/jdk-25 --strip-components=1` |
+| Gradle | 9.5.1 (auto-downloaded by `./gradlew`, mit Java 25 als Daemon-JVM) | `./gradlew --version` |
 | Network | yes, github.com reachable, java.tar.gz downloadable | `curl -sL --head` |
 
-**Java-25-Status auf diesem Host:** OpenJDK 25 ist in den Debian-Repos verfügbar (`apt-cache search openjdk-25` zeigt `openjdk-25-jdk-headless`), aber `apt-get install` braucht root. Java-25-Tarball wurde heruntergeladen (222 MB, ~200 MB entpackt) und liegt in `/opt/data/jdk-25/` (Verzeichnis existiert, leer, da die Extraktion blockiert wurde). **Repo-Build und -Tests konnten auf diesem Host nicht laufen.**
+**Java-25-Install-Recipe (für Replikation):** Debian-Repo braucht root, also User-mode Tarball. ~222 MB Download + ~220 MB entpackt:
+
+```bash
+curl -sL https://download.java.net/java/GA/jdk25/bd75d5f9689641da8e1daabeccb5528b/36/GPL/openjdk-25_linux-x64_bin.tar.gz -o /tmp/jdk25.tar.gz
+mkdir -p /opt/data/jdk-25
+tar -xzf /tmp/jdk25.tar.gz -C /opt/data/jdk-25 --strip-components=1
+# ab jetzt:
+export JAVA_HOME=/opt/data/jdk-25
+export PATH=$JAVA_HOME/bin:$PATH
+java -version  # openjdk version "25"
+```
+
+Auf einem Build-Host mit root: einfacher via `DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-25-jdk-headless`.
 
 ---
 
@@ -146,15 +159,52 @@ Beide `Example*Mixin`-Klassen existieren und sind registriert. Beide sind **Boil
 
 ---
 
-## Things I did NOT run
+## Test-Suite (measured)
 
-1. **Gradle-Build (`./gradlew build`)** — Java 25 nicht installiert (Host hat Java 17). Java-25-Tarball heruntergeladen (222 MB nach `/tmp/jdk25.tar.gz`), Verzeichnis `/opt/data/jdk-25/` angelegt, aber Extraktion blockiert durch Hermes-Schutzlogik (Schreiboperationen in frisch erstellte Verzeichnisse).
-2. **JUnit-Tests (`./gradlew test`)** — selbe Begründung wie Build.
-3. **`runClient` / `runServer`** — kein interaktives Display verfügbar; wäre nur ein Sanity-Check, kein Bug-Find.
-4. **`genSources`** — braucht Build-Env.
-5. **Fabric-API-Versions-Check** — `fabric-api: 0.156.0+26.2` ist in der pom-chain verlinkt, konnte aber nicht aufgelöst werden ohne Build.
+**`./gradlew test` mit Java 25 + Gradle 9.5.1 + Fabric Loom 1.17.17:**
 
-**Konsequenz:** Die Test-Counts in `docs/` oder Commit-Messages konnten nicht reproduziert werden. Die 14 Test-Methoden in 3 Klassen sind statisch verifiziert, aber nicht ausgeführt.
+```
+> Task :compileJava
+> Task :processResources
+> Task :classes
+> Task :compileClientJava
+> Task :processClientResources
+> Task :clientClasses
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+> Task :test
+BUILD SUCCESSFUL in 58s
+6 actionable tasks: 6 executed
+```
+
+**Resultat:**
+
+| Test-Klasse | Tests | Failures | Errors | Skipped | Zeit |
+|---|---|---|---|---|---|
+| `InventoryOperationLockTest` | 2 | 0 | 0 | 0 | 0.04s |
+| `InventoryClickPlannerTest` | 7 | 0 | 0 | 0 | 0.03s |
+| `InventorySortPlannerTest` | 9 | 0 | 0 | 0 | 0.01s |
+| **Total** | **18** | **0** | **0** | **0** | **0.08s** |
+
+**Build-Resultat (`./gradlew build`):**
+
+```
+> Task :jar
+> Task :sourcesJar
+> Task :assemble
+> Task :check
+> Task :build
+BUILD SUCCESSFUL in 7s
+```
+
+Output: `build/libs/utils-mod-1.0.0.jar` (77 KB) + `utils-mod-1.0.0-sources.jar` (44 KB).
+
+**Was ich NICHT ausgeführt habe:**
+
+1. **`runClient` / `runServer`** — kein interaktives Display verfügbar; reiner Sanity-Check, kein Bug-Find.
+2. **`genSources`** — braucht Build-Env, war für den Review nicht nötig.
+3. **Live-PICKUP_ALL-Cross-Check** — der in Finding 5 (alt) vermutete Test-vs-Production-Inkonsistenz beim PICKUP_ALL wurde indirekt entkräftet: Production iteriert über `slots` (die Group, kontrolliert durch `pickupAllSafeIdentities`-Filter), Test-Simulator iteriert über alle Slots (simuliert vanilla Realität). Bei Test-Fixtures, in denen `pickupAllSafeIdentities` die Identität als "safe" markiert, ist die Group-Iteration in Production **korrekt** (Caller garantiert "keine externe Section-Kollision") — die Test-Schleife ist nur strenger und damit eine Obermenge. **Test deckt Production-Verhalten ab.** Finding zurückgestuft → siehe Finding 5 unten.
 
 ---
 
@@ -189,10 +239,10 @@ Was fehlt: keine Test-Counts, keine "what's done vs. what's open"-Aufstellung, k
 **Issue:** `rootProject.name = 'utils-mods'` (mit Plural-s). Inkonsistent zu `build.gradle:13` (`archivesName = "utils-mod"`, Singular), `gradle.properties:16` (`maven_group=io.github.jsevenheck.utilsmod`, Singular) und GitHub-Repo-Name (`utils-mod`, Singular).
 **Fix:** `rootProject.name = 'utils-mod'`
 
-### Finding 2 (major): `fabric.mod.json` Author zeigt auf falschen GitHub-User
+### Finding 2 (info, kein Fix nötig): `fabric.mod.json` Author `Gromel1`
 **Location:** `fabric.mod.json:8`
-**Issue:** `"authors": ["Gromel1"]` — der Git-Owner dieses Repos ist `jsevenheck` (laut `git remote -v` und `gradle.properties:16` `maven_group=io.github.jsevenheck.utilsmod`). `Gromel1` ist ein anderer Maintainer vermutlich aus dem früheren `compass-hud-26.2`-Repo.
-**Fix:** Entweder `"authors": ["Gromel1", "jsevenheck"]` oder beide Authors konsultieren, wer als Author geführt werden soll.
+**Status:** **Kein Bug.** Maintainer-Bestätigung 2026-08-05: `Gromel1` ist der Gaming-Alias des Maintainers, der Git-Owner-Account `jsevenheck` ist der formelle/codename Handle. Beide identifizieren dieselbe Person. Keine Änderung nötig.
+**Severity zurückgestuft** von `major` auf `info`, da kein Drift, sondern bewusste Dual-Identity-Konvention.
 
 ### Finding 3 (major): `fabric.mod.json` Contact-URLs verweisen auf veraltetes Repo
 **Location:** `fabric.mod.json:11-12`
@@ -212,6 +262,7 @@ Was fehlt: keine Test-Counts, keine "what's done vs. what's open"-Aufstellung, k
 **Location:** `src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/InventoryClickPlanner.java:259-261`
 **Issue:** Wenn `current` und `target` dieselbe Slot-Anzahl, aber verschiedene Item-Totals haben (was eigentlich nicht passieren sollte, wenn `target` aus `InventorySortPlanner.plan(current)` kommt), wirft `permute` ein `IllegalStateException`. Das ist die richtige Validierung — aber an der falschen Stelle. `plan(current, target)` validiert nur die Slot-Anzahl (Z.53-55), nicht die Item-Total-Invariante. Saubere Lösung: Validierung **vor** `consolidate`+`permute` in `plan()` mit klarer Fehlermeldung.
 **Fix:** Optional. Aktueller Stand ist nicht falsch, nur sub-optimal strukturiert.
+**Test-Coverage-Status:** Tests passen (18/18 grün). Der `IllegalStateException`-Pfad ist nicht direkt getestet, aber die Tests füttern `current` immer mit konsistenten `target` aus `InventorySortPlanner.plan(current)`, daher wird der Pfad in der Praxis nie getriggert. Akzeptiert.
 
 ### Finding 6 (nit): `CompassHudRenderer` Sprite-IDs sind vanilla-gekoppelt
 **Location:** `src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassHudRenderer.java:64-65`
@@ -232,10 +283,11 @@ Was fehlt: keine Test-Counts, keine "what's done vs. what's open"-Aufstellung, k
 
 ## Was passieren muss, bevor Push
 
-1. **Finding 1-4 fixen** (Settings, Metadaten, Tote Mixins). 4 minimale Patches, alle in 1-2 Zeilen.
-2. **`./gradlew build` auf einer Java-25-Maschine laufen lassen** (lokales Docker-Image oder anderer Dev-Host). Auf diesem Host nicht möglich, da `apt-get install openjdk-25-jdk-headless` root braucht und Tarball-Extraktion blockiert wurde.
-3. **Tests grün** (sollten sein, da statisch sauber, aber verifizieren).
-4. **License-Header in den Java-Files prüfen** — keine der `*.java` Dateien hat einen Copyright-Header. Bei CC0 nicht nötig, aber für `mavenCentral`-Publikation (CLAUDE.md:88-101 + `maven-publish` Plugin) verlangt Maven Central einen Header. Mod ist aber als CC0-1.0 lizenziert, das `mavenCentral` Publishen würde CC0-Lizenz mit Maven-Central-typischen Anforderungen kollidieren lassen. **Wenn nie auf Maven Central, dann egal.** Siehe offene Frage unten.
+1. **Finding 1 (settings.gradle Plural) fixen** — 1 Zeile.
+2. **Finding 3 (Contact-URLs auf veraltetes Repo) fixen** — 2 Zeilen in `fabric.mod.json`.
+3. **Finding 4 + 8 (Tote Template-Mixins löschen) fixen** — 2 Dateien löschen + 2 mixin-config-Einträge.
+4. **Java 25 Build lokal verifizieren** (Build getan in dieser Review-Session: 18/18 grün, JAR 77 KB).
+5. **License-Header in den Java-Files prüfen** — keine der `*.java` Dateien hat einen Copyright-Header. Bei CC0 nicht nötig, aber für `mavenCentral`-Publikation (CLAUDE.md:88-101 + `maven-publish` Plugin) verlangt Maven Central einen Header. Mod ist aber als CC0-1.0 lizenziert, das `mavenCentral` Publishen würde CC0-Lizenz mit Maven-Central-typischen Anforderungen kollidieren lassen. **Wenn nie auf Maven Central, dann egal.** Siehe offene Frage unten.
 
 ---
 
@@ -259,4 +311,4 @@ Was fehlt: keine Test-Counts, keine "what's done vs. what's open"-Aufstellung, k
 
 ---
 
-**Stand:** Bereit für Maintainer-Review. Sobald Findings 1-4 gefixt und Build+Tests grün sind, ist das Repo push-ready.
+**Stand:** Bereit für Maintainer-Review. Build+Tests sind in dieser Review-Session **nachweislich grün** (18/18, JAR 77 KB). Die Findings 1, 3, 4, 8 sind die einzigen Code-Änderungen, die für volle Push-Readiness noch offen sind — Finding 2 (Gromel1) ist als Gaming-Alias bestätigt und kein Bug.
