@@ -3,7 +3,8 @@
 	"package": "io.github.jsevenheck.utilsmod.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"ExampleClientMixin"
+		"ExampleClientMixin",
+		"AbstractContainerScreenAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

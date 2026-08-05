@@ -76,3 +76,18 @@ When testing changes to `CompassHudRenderer`, verify:
 - Looks correct at different GUI scales (`Options → Video Settings → GUI Scale`).
 - No console errors/exceptions in `run/logs/latest.log` related to `compass-hud`.
 - Waypoint dots (other players) on the compass strip: these only render when there's another real player nearby, so a single-instance dev session shows nothing there by design. To test: pause your `runClient` world and **Open to LAN**, then launch a second client (a second `runClient` run, or a vanilla install/second account) and join `localhost:<port>`. Verify the other player's dot tracks their direction, scrolls with the compass, and shows an up/down arrow when they're above/below your view.
+
+## Manual test checklist for the Bundle UI
+
+When testing changes to the Bundle feature, use a survival player inventory and verify:
+
+- Open the inventory, hover a Bundle in the main inventory or hotbar, and Shift + Right Click it.
+- The Bundle screen opens without a custom server menu; all contents are visible, including more than twelve entries via mouse-wheel paging.
+- Item tooltips, stack counts, durability bars, glints, hover highlighting, and the player inventory/hotbar render correctly at multiple GUI scales.
+- Normal-click an arbitrary Bundle entry and place the cursor stack into a player slot.
+- Shift-click an entry with compatible stacks, with empty slots, and with a full inventory; no overflow disappears and any remainder stays in the Bundle.
+- Click an allowed and a disallowed inventory item for insertion; vanilla Bundle capacity/restrictions are respected and remainders return to their source slot.
+- Shift-click an inventory stack into the Bundle, then reopen it and confirm the synchronized contents.
+- Close with Escape and the inventory key; confirm the normal inventory screen returns and the cursor is safe.
+- Start a sort operation and confirm Bundle manipulation cannot run concurrently; start a Bundle operation and confirm sorting cannot run concurrently.
+- Repeat the checks in an integrated singleplayer world and, where possible, on a vanilla-compatible multiplayer server. Some servers or anti-cheat systems may reject automated timing; the operation must cancel to the server state.

@@ -3,5 +3,11 @@
   "compass-hud.inventorysort.already_sorted": "Inventar ist bereits sortiert",
   "compass-hud.inventorysort.unsupported_menu": "Dieses Menü unterstützt kein Sortieren",
   "compass-hud.inventorysort.cursor_not_empty": "Leere zuerst deinen Cursor, um zu sortieren",
-  "compass-hud.inventorysort.aborted": "Inventarsortierung abgebrochen"
+  "compass-hud.inventorysort.aborted": "Inventarsortierung abgebrochen",
+  "key.compass-hud.open_bundle": "Bündel öffnen",
+  "screen.compass-hud.bundle": "Bündel",
+  "compass-hud.bundle.empty": "Bündel ist leer",
+  "compass-hud.bundle.changed": "Bündel wurde verändert; Aktion abgebrochen",
+  "compass-hud.bundle.aborted": "Bündelaktion abgebrochen",
+  "compass-hud.bundle.cursor_busy": "Beende zuerst die aktuelle Cursoraktion"
 }

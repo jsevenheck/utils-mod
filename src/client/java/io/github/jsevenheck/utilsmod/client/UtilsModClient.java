@@ -5,7 +5,7 @@ import net.fabricmc.api.ClientModInitializer;
 
 /**
  * Central client entrypoint for the mod. Delegates to {@link FeatureRegistry}, which owns and
- * initializes every individual client-side feature (compass HUD, inventory sorting, ...).
+ * initializes every individual client-side feature (compass HUD, inventory sorting, Bundle UI, ...).
  */
 public class UtilsModClient implements ClientModInitializer {
     @Override

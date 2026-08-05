@@ -38,6 +38,12 @@ public final class ModConfig {
     /** Client ticks between each queued click while a sort is running. */
     public int clickDelayTicks = 1;
 
+    /** Master switch for the improved client-side Bundle screen. */
+    public boolean bundleUiEnabled = true;
+
+    /** Opens the Bundle screen for the default Shift + Right Click shortcut. */
+    public boolean bundleUiShiftRightClick = true;
+
     public static ModConfig get() {
         if (instance == null) {
             instance = load();

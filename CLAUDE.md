@@ -2,7 +2,7 @@
 
 Single Gradle (Fabric Loom) project, mod id **`compass-hud`**: a client-side utility mod for
 Minecraft 26.2. It bundles multiple independent features behind one mod jar/id — currently a compass
-HUD strip and an inventory-sort keybind — organized as self-contained `feature` packages under one
+HUD strip, inventory sorting, and an improved Bundle UI — organized as self-contained `feature` packages under one
 shared entrypoint.
 
 ```text
@@ -32,7 +32,7 @@ CI (`.github/workflows/build.yml`) runs `./gradlew build` on Ubuntu 24.04 with J
 - Minecraft 26.2 · Fabric Loader 0.19.3 · Fabric API `0.156.0+26.2`
 - Fabric Loom `1.17-SNAPSHOT` (Gradle plugin `net.fabricmc.fabric-loom`)
 - Split source sets (`splitEnvironmentSourceSets()`): `src/main` + `src/client`
-- Mixins (SpongePowered) with separate common and client configs — currently unused by either feature; only add one if strictly necessary, prefer Fabric API events first
+- Mixins (SpongePowered) with separate common and client configs — the Bundle opening hit-test uses one client accessor mixin because the vanilla GUI origin is protected; otherwise prefer Fabric API events first
 - SLF4J for logging; JUnit 5 (`junit-bom`/`junit-jupiter`/`junit-platform-launcher`) for `src/test`; Gson (bundled with the game) for config persistence — no new runtime dependencies were added for any of this
 - All versions/pins live in `gradle.properties`
 
@@ -79,12 +79,19 @@ src/
       SortableSlotResolver.java     <- package-private: current screen/menu -> sortable SortSlots (or none)
       SortSession.java              <- package-private record: menu + player-section slots + container-section slots
       ItemIdentities.java           <- package-private: ItemStack -> ItemIdentity (component-based key)
+    bundle/
+      BundleFeature.java             <- Shift + Right Click entry point for the client Bundle screen
+      BundleScreen.java              <- virtual Bundle slots plus real player-inventory slots
+      BundleInteractionPlanner.java  <- validated vanilla click sequences for extraction/insertion
+      BundleInteractionExecutor.java <- tick-paced execution against the real InventoryMenu
+    mixin/AbstractContainerScreenAccessor.java <- client GUI-origin accessor for opening hit-tests
     mixin/ExampleClientMixin.java
   client/resources/
     compass-hud.client.mixins.json  <- client mixin config
   test/java/io/github/jsevenheck/utilsmod/feature/inventorysort/
     InventorySortPlannerTest.java   <- unit tests for the sort planner
     InventoryClickPlannerTest.java  <- unit tests for the click planner, with a from-scratch click simulator
+    InventoryOperationLockTest.java <- shared sort/Bundle-operation exclusion tests
 ```
 
 The `io.github.jsevenheck.utilsmod` package (both source sets) is the only base package in this project. Everything feature-specific goes under a `feature/<name>/` subpackage of it (with the pure/testable half in `src/main` and the Minecraft-facing half in `src/client`); there's no other place to route new code.
@@ -101,8 +108,9 @@ The `io.github.jsevenheck.utilsmod` package (both source sets) is the only base 
 ### Feature architecture
 
 - `ModFeature` is a one-method interface (`initializeClient()`); each feature under `client/feature/<name>/` implements it and does all of its own Fabric API registration inside that method.
-- `FeatureRegistry` holds a static `List<ModFeature>` (currently `CompassHudFeature`, `InventorySortFeature`) and calls `initializeClient()` on each from `UtilsModClient`. To add a feature, implement `ModFeature` in a new `feature/<name>/` package and add it to that list — no other wiring is needed.
+- `FeatureRegistry` holds a static `List<ModFeature>` (currently `CompassHudFeature`, `InventorySortFeature`, `BundleFeature`) and calls `initializeClient()` on each from `UtilsModClient`. To add a feature, implement `ModFeature` in a new `feature/<name>/` package and add it to that list — no other wiring is needed.
 - Shared client-side settings for all features live in one `ModConfig` (Gson JSON at `config/compass-hud.json`, lazy singleton via `ModConfig.get()`); add new fields there rather than inventing a second config file.
+- `InventoryOperationLock` is the shared, Minecraft-independent exclusion guard. The Bundle screen holds it while open; the inventory sorter acquires it for queued execution, so the two features cannot manipulate the same player menu concurrently.
 
 ### Mixin configs
 
@@ -141,8 +149,18 @@ Rules:
   2. `InventoryClickPlanner.plan(current, target)` — turns "current state" and "target state" into a minimal, ordered `List<ClickOperation>` via a two-phase algorithm: Phase 1 consolidates partial stacks of the same identity using a guarded vanilla `PICKUP_ALL` fast path when the complete identity group fits in one cursor stack and is safe for the complete open menu; larger groups use the waterfall pickup/merge/spillback algorithm. Phase 2 realizes the remaining current→target permutation as direct greedy swaps using inverse-index bookkeeping. Every `ClickOperation` records what it expects to find (slot identity/count, cursor empty or not, and interaction kind) *before* it fires, so the executor can verify state rather than assume it.
 - **Execution** (`InventoryClickExecutor`, driven by `InventorySortController` from the same tick handler): plays back at most one `ClickOperation` per client tick by default (`clickDelayTicks = 1`; larger values add ticks between interactions), exclusively through `Minecraft.gameMode.handleContainerInput(...)` with either `ContainerInput.PICKUP` or the guarded `ContainerInput.PICKUP_ALL` — the same client-facing API vanilla screens use (predicts locally, sends the normal server packet) — never mutating menu/slot state directly. Before every interaction it re-validates the real slot/cursor against the operation's expectations and that the screen/menu/`containerId` haven't changed and the player/level still exist; any mismatch aborts the remaining queue immediately. A run only reports success if the cursor is empty once the queue is exhausted. Starting a new sort requires an empty cursor and no sort already in progress (`InventorySortController` holds at most one active `InventoryClickExecutor`).
 - **Feedback**: `LocalPlayer.sendOverlayMessage(Component.translatable(...))` only (action-bar, local-only, never sent to server/chat), for: unsupported menu, cursor not empty, already sorted, and aborted. No "sort started" message — the visible rearrangement is its own feedback and the spec explicitly asked to keep this unobtrusive. Translation keys live in `assets/compass-hud/lang/{en_us,de_de}.json`.
-- **Config** (`ModConfig`, all client-only, all in `config/compass-hud.json`): `inventorySortEnabled`, `sortSectionsIndependently` (default `true` — never redistributes items between an open container and the player's own inventory unless the user opts into `false`), `clickDelayTicks` (default `1`, clamped to a minimum of 1 via `effectiveClickDelayTicks()`). The hotbar is never included.
+- **Config** (`ModConfig`, all client-only, all in `config/compass-hud.json`): `inventorySortEnabled`, `sortSectionsIndependently` (default `true` — never redistributes items between an open container and the player's own inventory unless the user opts into `false`), `clickDelayTicks` (default `1`, clamped to a minimum of 1 via `effectiveClickDelayTicks()`), `bundleUiEnabled`, and `bundleUiShiftRightClick`. The sorter never includes the hotbar; the Bundle UI deliberately includes the hotbar because Bundles there are supported.
 - **Tests** (`src/test/.../feature/inventorysort/`): `InventorySortPlannerTest` covers empty inventory, already-sorted, mixed identifiers, multi-partial-stack consolidation, same-item-different-components (not merged), non-stackable items, a full inventory with no spare slots, excluded slots never reaching the planner, and deterministic output across runs. `InventoryClickPlannerTest` replays every produced `ClickOperation` through a hand-written simulator of vanilla pickup/merge/swap semantics and asserts each operation's expectations hold, the cursor starts/ends empty, and the final state matches the target exactly — including the full-inventory reorder and same-identity/different-count swap cases.
+
+## Improved Bundle UI
+
+- **Opening**: `BundleFeature` registers Fabric's `ScreenMouseEvents.allowMouseClick`. With `bundleUiEnabled` and `bundleUiShiftRightClick` enabled, Shift + Right Click is intercepted only for a Bundle in the player's own `InventoryMenu` slots 0–35 (main inventory and hotbar). External container menus, armor/offhand, creative inventory, and Bundles outside an inventory screen are ignored.
+- **Virtual UI**: `BundleScreen` extends the normal client `Screen`, not `AbstractContainerScreen` and not a server-backed menu. It renders every `BundleContents.itemCopyStream()` entry in a paged four-column grid and renders the player's real main inventory/hotbar below it. Tooltips and vanilla item decorations are delegated to `GuiGraphicsExtractor`.
+- **Vanilla interaction**: `BundleInteractionPlanner` maps a virtual action to real `InventoryMenu` slot clicks. It selects an arbitrary content index with `BundleItem.toggleSelectedItem` plus `ServerboundSelectBundleItemPacket`, extracts with the vanilla right-click Bundle path, inserts with the vanilla Bundle component override, and returns remainders to their source slot. It never treats a locally replaced Bundle component as authoritative.
+- **Validation**: `BundleInteractionExecutor` sends at most one real click per client tick. Before every step it verifies the player, level, screen, menu, Bundle slot ownership, cursor, Bundle stack, and target slot. It also validates the predicted final state and aborts on mismatch. The screen always rereads the synchronized Bundle stack instead of retaining a mutable contents model.
+- **Supported**: survival player inventory, main inventory/hotbar Bundles, all vanilla Bundle colors, viewing all contents, normal extraction, Shift-extraction, insertion, and Shift-insertion.
+- **Unsupported**: external-container Bundles, creative manipulation, nested/recursive workflows, drag-and-drop, mass filling, Bundle sorting, and a separate configurable open key. The UI deliberately does not spoof a custom menu or bypass server/anti-cheat restrictions.
+- **Config**: `bundleUiEnabled` and `bundleUiShiftRightClick` live in the shared `ModConfig`; translation keys are in `assets/compass-hud/lang/{en_us,de_de}.json`.
 
 ## Logging Rules
 

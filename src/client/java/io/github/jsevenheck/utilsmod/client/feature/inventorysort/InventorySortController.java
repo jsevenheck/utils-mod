@@ -1,6 +1,7 @@
 package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 
 import io.github.jsevenheck.utilsmod.client.config.ModConfig;
+import io.github.jsevenheck.utilsmod.feature.InventoryOperationLock;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.ClickOperation;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.InventoryClickPlanner;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.ItemIdentity;
@@ -31,6 +32,7 @@ final class InventorySortController {
                 if (activeExecution.wasAborted()) {
                     feedback(minecraft, "compass-hud.inventorysort.aborted");
                 }
+                InventoryOperationLock.release("inventory-sort");
                 activeExecution = null;
             }
             return;
@@ -66,6 +68,9 @@ final class InventorySortController {
             return;
         }
 
+        if (!InventoryOperationLock.tryAcquire("inventory-sort")) {
+            return;
+        }
         activeExecution = new InventoryClickExecutor(session.menu(), operations, config.effectiveClickDelayTicks());
     }
 

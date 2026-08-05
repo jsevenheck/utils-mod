@@ -1,6 +1,6 @@
 # Utils Mod
 
-A client-side utility mod for Minecraft 26.2, built on Fabric. It currently bundles two independent
+A client-side utility mod for Minecraft 26.2, built on Fabric. It currently bundles three independent
 features under one mod (`compass-hud`):
 
 - **Compass HUD** — a horizontally scrolling compass strip at the top-center of the screen, showing
@@ -9,9 +9,13 @@ features under one mod (`compass-hud`):
   [Architecture](#architecture) below).
 - **Inventory Sort** — a keybind that sorts your inventory and, when a supported container is open,
   the container's storage slots too.
+- **Improved Bundle UI** — a chest-like client screen for viewing and moving items in a Bundle.
 
-Both features are purely client-side. The mod never needs to be installed on a server, and it never
+All three features are purely client-side. The mod never needs to be installed on a server, and it never
 requires anything from the server beyond normal vanilla container interaction.
+
+The mod also includes an **Improved Bundle UI**. With the player inventory open, Shift + Right Click
+a Bundle in your own inventory or hotbar to open a chest-like view of all its contents.
 
 ## Inventory Sort
 
@@ -58,6 +62,27 @@ A config file is created at `config/compass-hud.json` on first run:
 | `inventorySortEnabled` | `true` | Turn the whole feature off. |
 | `sortSectionsIndependently` | `true` | If `true`, your inventory and an open container are sorted separately, so items never move between the two. If `false`, both are sorted as one combined pool. |
 | `clickDelayTicks` | `1` | Minimum ticks per queued click; clamped to a minimum of `1`. |
+| `bundleUiEnabled` | `true` | Turn the improved Bundle screen off. |
+| `bundleUiShiftRightClick` | `true` | Enable the default Bundle shortcut. |
+
+## Improved Bundle UI
+
+The Bundle screen is fully client-side and does not create a custom server menu, so no server
+installation is required. It reads the synchronized Bundle component from the real player inventory
+and sends only vanilla Bundle-selection packets and normal server-authoritative inventory clicks.
+
+The upper panel shows every Bundle entry, with mouse-wheel paging for large Bundles. Click an entry to
+extract it to the cursor, or Shift-click to distribute it into compatible inventory stacks and empty
+slots. Click a player-inventory stack to insert it; unsupported items and Bundle capacity are handled
+by vanilla's Bundle APIs, and any remainder is returned to its source slot. The Bundle slot, menu,
+cursor, and expected state are validated before every queued interaction. Sorting and Bundle operations
+share a lock and cannot run concurrently.
+
+Supported: survival player inventory, main inventory and hotbar Bundles, all vanilla Bundle colors,
+viewing all contents, extraction, Shift-extraction, insertion, and Shift-insertion. External-container
+Bundles, creative manipulation, nested Bundle workflows, drag-and-drop, mass filling, and Bundle
+sorting are intentionally not supported. Some multiplayer servers or anti-cheat systems may reject
+unusual automated inventory timing; rejected actions are allowed to resolve to the server state.
 
 ## Documentation
 
@@ -77,6 +102,7 @@ src/client/java/io/github/jsevenheck/utilsmod/client/
   feature/FeatureRegistry.java
   feature/compass/           <- Compass HUD rendering
   feature/inventorysort/     <- keybind, slot resolution, click execution/orchestration
+  feature/bundle/            <- virtual Bundle UI over the real player InventoryMenu
 ```
 
 The inventory-sort planning algorithm (what goes where, and which sequence of clicks gets there) is

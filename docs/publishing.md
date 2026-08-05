@@ -33,6 +33,8 @@ Run `./gradlew clean build` if you want a fully fresh build (clears cached/up-to
 - [ ] `depends` in `fabric.mod.json` matches what you actually require: `fabricloader >= 0.19.3`, `minecraft ~26.2`, `java >= 25`, `fabric-api *`. Tighten `fabric-api`'s version range if you rely on APIs added in a specific release.
 - [ ] `icon.png` (`src/main/resources/assets/compass-hud/icon.png`) looks right — this is what shows up as the project/file thumbnail.
 - [ ] No leftover debug logging or test code.
+- [ ] Bundle UI smoke-tested: Shift + Right Click opening, arbitrary extraction, Shift-extraction, insertion, remainder handling, close/reopen synchronization, and sorter-operation exclusion.
+- [ ] README and `docs/local-development.md` describe the current three-feature scope and Bundle limitations.
 
 ## 4. Publishing to CurseForge
 

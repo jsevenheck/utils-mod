@@ -1,6 +1,7 @@
 package io.github.jsevenheck.utilsmod.client.feature;
 
 import io.github.jsevenheck.utilsmod.client.feature.compass.CompassHudFeature;
+import io.github.jsevenheck.utilsmod.client.feature.bundle.BundleFeature;
 import io.github.jsevenheck.utilsmod.client.feature.inventorysort.InventorySortFeature;
 
 import java.util.List;
@@ -10,7 +11,8 @@ public final class FeatureRegistry {
 
     private static final List<ModFeature> FEATURES = List.of(
         new CompassHudFeature(),
-        new InventorySortFeature()
+        new InventorySortFeature(),
+        new BundleFeature()
     );
 
     private FeatureRegistry() {
