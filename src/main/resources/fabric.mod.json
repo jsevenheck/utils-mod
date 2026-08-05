@@ -3,7 +3,7 @@
 	"id": "compass-hud",
 	"version": "${version}",
 	"name": "Utils Mod",
-	"description": "Client-side utility features: Compass HUD, inventory sorting, and an improved Bundle UI.",
+	"description": "Client-side utilities: Compass HUD with local waypoints, inventory sorting, and an improved Bundle UI.",
 	"authors": [
 		"Gromel1"
 	],

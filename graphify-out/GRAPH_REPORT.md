@@ -1,115 +1,116 @@
 # Graph Report - utils-mod  (2026-08-05)
 
 ## Corpus Check
-- 28 files · ~10,526 words
+- 36 files · ~13,912 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 272 nodes · 680 edges · 10 communities (9 shown, 1 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.8)
+- 372 nodes · 994 edges · 11 communities (9 shown, 2 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 54 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dc52a712`
+- Built from commit: `5a52e965`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - ItemIdentity
-- BundleFeature.java
-- Slot
+- ModConfig
+- .tick
 - BundleScreen
 - BundleInteractionExecutor
-- CompassHudRenderer
+- CompassHudRenderer.java
 - .plan
-- InventorySortController.java
-- ClickOperation
+- LocalWaypointService
 - ItemIdentitiesTest
+- WaypointMarker
+- WaypointProfileResolver
 
 ## God Nodes (most connected - your core abstractions)
-1. `BundleScreen` - 32 edges
-2. `ItemIdentity` - 26 edges
-3. `SortSlot` - 26 edges
-4. `ClickOperation` - 20 edges
-5. `InventoryClickPlanner` - 16 edges
-6. `InventoryClickPlannerTest` - 16 edges
-7. `InventorySortPlannerTest` - 16 edges
-8. `CompassHudRenderer` - 15 edges
-9. `BundleInteractionExecutor` - 13 edges
-10. `BundleInteractionPlanner` - 12 edges
+1. `BundleScreen` - 36 edges
+2. `LocalWaypointService` - 36 edges
+3. `ItemIdentity` - 26 edges
+4. `SortSlot` - 26 edges
+5. `CompassWaypointCommands` - 22 edges
+6. `ClickOperation` - 20 edges
+7. `ModConfig` - 19 edges
+8. `CompassHudRenderer` - 18 edges
+9. `WaypointMarker` - 18 edges
+10. `InventoryClickPlanner` - 16 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `ModConfig` --references--> `WaypointProfile`  [EXTRACTED]
+  src/client/java/io/github/jsevenheck/utilsmod/client/config/ModConfig.java → src/main/java/io/github/jsevenheck/utilsmod/feature/compass/WaypointProfile.java
+- `LocalWaypointService` --references--> `ModConfig`  [EXTRACTED]
+  src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/LocalWaypointService.java → src/client/java/io/github/jsevenheck/utilsmod/client/config/ModConfig.java
 - `BundleInteractionExecutor` --references--> `BundleScreen`  [EXTRACTED]
   src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleInteractionExecutor.java → src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleScreen.java
-- `InventorySortFeature` --references--> `InventorySortController`  [EXTRACTED]
-  src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/InventorySortFeature.java → src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/InventorySortController.java
-- `SortSession` --references--> `SortSlot`  [EXTRACTED]
-  src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/SortSession.java → src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/SortSlot.java
-- `ClickOperation` --references--> `ItemIdentity`  [EXTRACTED]
-  src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/ClickOperation.java → src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/ItemIdentity.java
-- `InventorySortPlannerTest` --references--> `ItemIdentity`  [EXTRACTED]
-  src/test/java/io/github/jsevenheck/utilsmod/feature/inventorysort/InventorySortPlannerTest.java → src/main/java/io/github/jsevenheck/utilsmod/feature/inventorysort/ItemIdentity.java
+- `CompassHudRenderer` --references--> `LocalWaypointService`  [EXTRACTED]
+  src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassHudRenderer.java → src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/LocalWaypointService.java
+- `LocalWaypointService` --references--> `WaypointProfileResolver`  [EXTRACTED]
+  src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/LocalWaypointService.java → src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/WaypointProfileResolver.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (10 total, 1 thin omitted)
+## Communities (11 total, 2 thin omitted)
 
 ### Community 0 - "ItemIdentity"
-Cohesion: 0.14
-Nodes (7): Cell, ContentKey, InventoryClickPlanner, ItemIdentity, SortSlot, InventoryClickPlannerTest, Test
+Cohesion: 0.12
+Nodes (11): ClickOperation, Kind, PICKUP, PICKUP_ALL, Cell, ContentKey, InventoryClickPlanner, ItemIdentity (+3 more)
 
-### Community 1 - "BundleFeature.java"
+### Community 1 - "ModConfig"
 Cohesion: 0.07
 Nodes (24): Accessor, ClientModInitializer, Gson, Logger, Mixin, ModInitializer, ModConfig, BundleFeature (+16 more)
 
-### Community 2 - "Slot"
-Cohesion: 0.16
-Nodes (9): Slot, ItemIdentities, DataComponentPatch, DataComponentType, ItemStack, Minecraft, SortableSlotResolver, AbstractContainerMenu (+1 more)
+### Community 2 - ".tick"
+Cohesion: 0.10
+Nodes (14): Slot, InventoryClickExecutor, AbstractContainerMenu, Minecraft, InventorySortController, Minecraft, ItemIdentities, DataComponentPatch (+6 more)
 
 ### Community 3 - "BundleScreen"
-Cohesion: 0.13
-Nodes (11): KeyEvent, Screen, BundleScreen, AbstractContainerMenu, BundleContents, GuiGraphicsExtractor, Identifier, Inventory (+3 more)
+Cohesion: 0.09
+Nodes (16): AfterEach, KeyEvent, Screen, BundleScreen, AbstractContainerMenu, BundleContents, GuiGraphicsExtractor, Identifier (+8 more)
 
 ### Community 4 - "BundleInteractionExecutor"
 Cohesion: 0.17
 Nodes (13): ContainerInput, BundleInteractionExecutor, AbstractContainerMenu, Inventory, Minecraft, BundleClickStep, BundleInteractionPlanner, BundleSelectionStep (+5 more)
 
-### Community 5 - "CompassHudRenderer"
-Cohesion: 0.19
-Nodes (15): Camera, DeltaTracker, Font, GameRenderer, HudElement, Level, LocalPlayer, PartialTickSupplier (+7 more)
-
-### Community 7 - "InventorySortController.java"
+### Community 5 - "CompassHudRenderer.java"
 Cohesion: 0.18
-Nodes (5): AfterEach, InventoryOperationLock, InventorySortPlanner, InventoryOperationLockTest, Test
+Nodes (15): Camera, DeltaTracker, Font, GameRenderer, HudElement, Level, PartialTickSupplier, CompassHudRenderer (+7 more)
 
-### Community 8 - "ClickOperation"
-Cohesion: 0.18
-Nodes (9): InventoryClickExecutor, AbstractContainerMenu, Minecraft, InventorySortController, Minecraft, ClickOperation, Kind, PICKUP (+1 more)
+### Community 8 - "LocalWaypointService"
+Cohesion: 0.11
+Nodes (16): Component, CompassWaypointCommands, Failure, DUPLICATE_NAME, INVALID_COLOR, INVALID_NAME, NO_ACTIVE_PROFILE, NO_PLAYER (+8 more)
 
 ### Community 9 - "ItemIdentitiesTest"
 Cohesion: 0.44
 Nodes (4): ItemIdentitiesTest, DataComponentPatch, DataComponentType, Test
 
+### Community 10 - "WaypointMarker"
+Cohesion: 0.11
+Nodes (8): ColorPreset, LocalWaypointRules, WaypointMarker, WaypointProfile, Test, LocalWaypointRulesTest, Test, WaypointProfileTest
+
 ## Knowledge Gaps
-- **2 isolated node(s):** `PICKUP`, `PICKUP_ALL`
+- **9 isolated node(s):** `NONE`, `NO_ACTIVE_PROFILE`, `NO_PLAYER`, `INVALID_NAME`, `DUPLICATE_NAME` (+4 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `SortSlot` connect `ItemIdentity` to `ClickOperation`, `Slot`, `.plan`, `InventorySortController.java`?**
-  _High betweenness centrality (0.175) - this node is a cross-community bridge._
-- **Why does `ItemIdentity` connect `ItemIdentity` to `ClickOperation`, `Slot`, `.plan`, `InventorySortController.java`?**
-  _High betweenness centrality (0.169) - this node is a cross-community bridge._
-- **Why does `BundleScreen` connect `BundleScreen` to `BundleFeature.java`, `BundleInteractionExecutor`?**
-  _High betweenness centrality (0.127) - this node is a cross-community bridge._
-- **What connects `PICKUP`, `PICKUP_ALL` to the rest of the system?**
-  _2 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `ModConfig` connect `ModConfig` to `.tick`, `BundleScreen`, `CompassHudRenderer.java`, `LocalWaypointService`, `WaypointMarker`?**
+  _High betweenness centrality (0.365) - this node is a cross-community bridge._
+- **Why does `BundleScreen` connect `BundleScreen` to `ModConfig`, `.tick`, `BundleInteractionExecutor`?**
+  _High betweenness centrality (0.196) - this node is a cross-community bridge._
+- **Why does `LocalWaypointService` connect `LocalWaypointService` to `ModConfig`, `WaypointMarker`, `WaypointProfileResolver`, `CompassHudRenderer.java`?**
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
+- **What connects `NONE`, `NO_ACTIVE_PROFILE`, `NO_PLAYER` to the rest of the system?**
+  _9 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ItemIdentity` be split into smaller, more focused modules?**
-  _Cohesion score 0.13937282229965156 - nodes in this community are weakly interconnected._
-- **Should `BundleFeature.java` be split into smaller, more focused modules?**
-  _Cohesion score 0.06612244897959184 - nodes in this community are weakly interconnected._
-- **Should `BundleScreen` be split into smaller, more focused modules?**
-  _Cohesion score 0.1337126600284495 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12395929694727105 - nodes in this community are weakly interconnected._
+- **Should `ModConfig` be split into smaller, more focused modules?**
+  _Cohesion score 0.06636500754147813 - nodes in this community are weakly interconnected._
+- **Should `.tick` be split into smaller, more focused modules?**
+  _Cohesion score 0.09672830725462304 - nodes in this community are weakly interconnected._

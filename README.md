@@ -1,116 +1,116 @@
 # Utils Mod
 
-A client-side utility mod for Minecraft 26.2, built on Fabric. It currently bundles three independent
-features under one mod (`compass-hud`):
+A client-side Fabric utility mod for Minecraft 26.2. It combines a compass HUD with local waypoints,
+inventory sorting, and an improved Bundle interface. Install it on the **client only**; vanilla and
+Fabric servers do not need this mod installed.
 
-- **Compass HUD** — a horizontally scrolling compass strip at the top-center of the screen, showing
-  heading ticks, N/NE/E/SE/S/SW/W/NW labels, degree numbers, and dots for nearby players/waypoints.
-  Unchanged from earlier versions of this mod — only its source location moved (see
-  [Architecture](#architecture) below).
-- **Inventory Sort** — a keybind that sorts your inventory and, when a supported container is open,
-  the container's storage slots too.
-- **Improved Bundle UI** — a chest-like client screen for viewing and moving items in a Bundle.
+## Features
 
-All three features are purely client-side. The mod never needs to be installed on a server, and it never
-requires anything from the server beyond normal vanilla container interaction.
+### Compass HUD and local waypoints
 
-The mod also includes an **Improved Bundle UI**. With the player inventory open, Shift + Right Click
-a Bundle in your own inventory or hotbar to open a chest-like view of all its contents.
+The compass HUD is a compact, horizontally scrolling strip at the top-centre of the screen. It shows
+heading ticks, cardinal/intercardinal directions, degree labels, and vanilla/server-provided locator
+dots for nearby players or other tracked waypoints.
 
-## Inventory Sort
+It also supports named, **local-only** waypoints. Waypoints are saved separately for each multiplayer
+server and each singleplayer save, and they only appear while you are in their saved dimension. They
+are never sent to a server or shared with other players.
 
-Press the **Sort Inventory** key (default: `R`, rebindable in *Options → Controls → Inventory*) while a
-supported inventory screen is open. Nothing happens if you press it anywhere else (main menu, while not
-looking at an inventory, etc.) — it's a safe no-op.
+Use the following local commands in a world:
 
-### Supported
+```text
+/compasshud waypoint add <name>
+/compasshud waypoint addcolor <RRGGBB|preset> <name>
+/compasshud waypoint addat <x> <y> <z> <name>
+/compasshud waypoint list
+/compasshud waypoint remove <name>
+/compasshud waypoint show <name>
+/compasshud waypoint hide <name>
+/compasshud waypoint color <name> <RRGGBB>
+/compasshud waypoint rename <old-name> <new-name>
 
-- Your own inventory screen (main inventory slots only; the hotbar is intentionally excluded).
-- The player-inventory row shown at the bottom of a container screen.
-- Standard chest-like storage: chests (including double chests), hoppers, dispensers/droppers, and
-  shulker boxes.
+/compasshud setting hud <on|off>
+/compasshud setting local <on|off>
+/compasshud setting vanilla <on|off>
+```
 
-### Not supported (left untouched)
+`add` saves the current block position; `addat` saves the supplied coordinates in the current
+dimension. `addcolor` creates a marker with a colour immediately; for example,
+`/compasshud waypoint addcolor red Base`. If that name already exists in the current profile,
+`addcolor` changes its colour and keeps its saved position. Local markers use an outlined diamond/map-pin shape,
+distinct from vanilla locator icons. Set an existing marker colour with six RGB hex digits, for example
+`/compasshud waypoint color Base FF8800`, or use a fixed colour preset: `red`, `orange`, `yellow`,
+`lime`, `green`, `cyan`, `blue`, `purple`, `pink`, or `white`. Command completion suggests all ten
+presets and shows a coloured swatch/hex preview in its tooltip. For names containing spaces, quote the
+name in `color` or `rename`, for example `/compasshud waypoint color "Old Base" FF8800`.
 
-Armor slots, the offhand slot, crafting-grid input/output, furnace/smoker/blast-furnace fuel and
-result slots, villager trading slots, anvil/smithing/enchanting/stonecutter/loom/cartography/beacon
-slots, creative-mode inventory, and any other menu this mod doesn't specifically recognize. Opening one
-of those and pressing the key either does nothing to those slots or shows a small "this menu doesn't
-support sorting" message, depending on whether *any* part of the open screen is sortable.
+### Inventory Sort
 
-### How sorting works (and why it's safe)
+Press the **Sort Inventory** key (default: `R`, rebindable in *Options → Controls → Inventory*) while
+a supported inventory screen or the custom Bundle view is open. The feature safely sorts the player main
+inventory and supported chest-like container storage.
 
-Minecraft is server-authoritative: the client can't just rearrange items locally. Sorting instead plans
-a queue of ordinary container interactions (the same click primitives vanilla screens use) and plays
-them back a few ticks apart, checking before every interaction that the slot and cursor still contain
-what the plan expects. For safe groups of several small stacks, it uses vanilla's collect-to-cursor
-interaction to reduce the number of visible moves. This fast path is disabled whenever the same item
-exists outside the section being sorted, because vanilla's collect operation searches the complete
-open menu. Groups that do not fit into one cursor stack use the conservative pickup/merge flow. If
-the screen closes, the container changes, the server corrects something unexpectedly, or your cursor
-state differs from the plan, the sort aborts immediately and sends no further clicks. It does not try
-to force a recovery click in an untrusted menu state; after an abort, check the cursor before continuing.
-You'll see a message if sorting can't start (menu not supported, cursor not empty) or gets aborted
-partway through; if your inventory is already sorted, nothing visibly happens.
+Supported: the player main inventory, chests/double chests, hoppers, dispensers/droppers, and shulker
+boxes. The hotbar, armor/offhand, crafting, furnace, villager, anvil, enchanting, creative, and other
+unsupported menus are deliberately left untouched.
 
-### Configuration
+Minecraft is server-authoritative, so the mod uses ordinary vanilla container clicks rather than
+editing item stacks locally. It validates the menu, slots, and cursor before every queued action and
+stops safely if the server or screen state changes unexpectedly.
 
-A config file is created at `config/compass-hud.json` on first run:
+### Improved Bundle UI
+
+With the player inventory open, **Shift + Right Click** a Bundle in your own inventory or hotbar to
+open a chest-like view of its contents. You can view every entry, extract normally or with Shift-click,
+and insert items using normal vanilla Bundle behaviour.
+
+The screen is client-side and does not create a custom server menu. It works through vanilla Bundle
+selection and inventory interactions, while checking the synchronized Bundle, menu, and cursor state
+before each action.
+
+Supported: survival player inventory, all vanilla Bundle colours, viewing, extraction,
+Shift-extraction, insertion, and Shift-insertion. External-container Bundles, creative manipulation,
+drag-and-drop, mass filling, nested Bundle workflows, and Bundle sorting are intentionally not
+supported.
+
+## Configuration
+
+A config file is created at `config/compass-hud.json` on first run.
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `inventorySortEnabled` | `true` | Turn the whole feature off. |
-| `sortSectionsIndependently` | `true` | If `true`, your inventory and an open container are sorted separately, so items never move between the two. If `false`, both are sorted as one combined pool. |
-| `clickDelayTicks` | `1` | Minimum ticks per queued click; clamped to a minimum of `1`. |
-| `bundleUiEnabled` | `true` | Turn the improved Bundle screen off. |
+| `compassHudEnabled` | `true` | Show the entire compass HUD. |
+| `compassVanillaWaypointMarkersEnabled` | `true` | Show server-provided locator dots. |
+| `localWaypointMarkersEnabled` | `true` | Show local waypoint dots without deleting them. |
+| `maxVisibleLocalWaypointMarkers` | `8` | Nearest local markers considered by the compass (`1`–`32`). |
+| `inventorySortEnabled` | `true` | Enable inventory sorting. |
+| `sortSectionsIndependently` | `true` | Keep an open container and player inventory as separate sorting pools. |
+| `clickDelayTicks` | `1` | Minimum ticks between sort clicks. |
+| `bundleUiEnabled` | `true` | Enable the improved Bundle screen. |
 | `bundleUiShiftRightClick` | `true` | Enable the default Bundle shortcut. |
 
-## Improved Bundle UI
+## Requirements and installation
 
-The Bundle screen is fully client-side and does not create a custom server menu, so no server
-installation is required. It reads the synchronized Bundle component from the real player inventory
-and sends only vanilla Bundle-selection packets and normal server-authoritative inventory clicks.
+- Minecraft `26.2`
+- Fabric Loader `0.19.3` or newer
+- Fabric API
+- Java 25-compatible Minecraft runtime
 
-The upper panel shows every Bundle entry, with mouse-wheel paging for large Bundles. Click an entry to
-extract it to the cursor, or Shift-click to distribute it into compatible inventory stacks and empty
-slots. Click a player-inventory stack to insert it; unsupported items and Bundle capacity are handled
-by vanilla's Bundle APIs, and any remainder is returned to its source slot. The Bundle slot, menu,
-cursor, and expected state are validated before every queued interaction. Sorting and Bundle operations
-share a lock and cannot run concurrently.
-
-Supported: survival player inventory, main inventory and hotbar Bundles, all vanilla Bundle colors,
-viewing all contents, extraction, Shift-extraction, insertion, and Shift-insertion. External-container
-Bundles, creative manipulation, nested Bundle workflows, drag-and-drop, mass filling, and Bundle
-sorting are intentionally not supported. Some multiplayer servers or anti-cheat systems may reject
-unusual automated inventory timing; rejected actions are allowed to resolve to the server state.
+Place the mod jar and Fabric API jar in the Minecraft instance's `mods` folder. No server-side jar,
+plugin, or command permission is required.
 
 ## Documentation
 
-- [Local development (VS Code)](docs/local-development.md) — building, running, and debugging the mod.
-- [Publishing](docs/publishing.md) — building a release jar and publishing to CurseForge.
+- [Feature documentation](docs/features.md) — detailed behaviour, commands, and limitations.
+- [CurseForge project description](docs/CURSEFORGE_DESCRIPTION.md) — ready-to-copy public project text.
+- [Local development (VS Code)](docs/local-development.md)
+- [Publishing](docs/publishing.md)
 
 ## Architecture
 
-Both features live under one Gradle project / mod id, split into `feature` packages:
-
-```text
-src/main/java/io/github/jsevenheck/utilsmod/
-  feature/inventorysort/     <- pure, Minecraft-independent sort planning logic (unit-tested)
-src/client/java/io/github/jsevenheck/utilsmod/client/
-  UtilsModClient.java        <- client entrypoint, initializes every feature via FeatureRegistry
-  config/ModConfig.java
-  feature/FeatureRegistry.java
-  feature/compass/           <- Compass HUD rendering
-  feature/inventorysort/     <- keybind, slot resolution, click execution/orchestration
-  feature/bundle/            <- virtual Bundle UI over the real player InventoryMenu
-```
-
-The inventory-sort planning algorithm (what goes where, and which sequence of clicks gets there) is
-implemented with no dependency on Minecraft classes and is covered by unit tests in `src/test`.
-
-## Setup
-
-For setup instructions, please see the [Fabric Documentation page](https://docs.fabricmc.net/develop/getting-started/creating-a-project#setting-up) related to the IDE that you are using.
+The project is split into pure, testable logic in `src/main` and Minecraft-facing client code in
+`src/client`. Compass rendering and local waypoint commands live in `feature/compass`; inventory-sort
+planning and Bundle interaction planning are covered by JUnit tests.
 
 ## License
 

@@ -1,5 +1,8 @@
 package io.github.jsevenheck.utilsmod.client.feature.compass;
 
+import io.github.jsevenheck.utilsmod.client.config.ModConfig;
+import io.github.jsevenheck.utilsmod.feature.compass.LocalWaypointRules;
+import io.github.jsevenheck.utilsmod.feature.compass.WaypointMarker;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -61,15 +64,24 @@ public final class CompassHudRenderer implements HudElement {
 	private static final int WAYPOINT_ARROW_HEIGHT = 5;
 	private static final int WAYPOINT_ARROW_X_OFFSET = 1;
 	private static final int WAYPOINT_ARROW_Y_OFFSET = 6;
+	private static final int LOCAL_WAYPOINT_PIN_SIZE = 7;
+	private static final int LOCAL_WAYPOINT_ROW_Y = HUD_Y + (BAR_HEIGHT - LOCAL_WAYPOINT_PIN_SIZE) / 2;
+	private static final int LOCAL_WAYPOINT_OUTLINE_COLOR = 0xFF101010;
 	// Version-coupled vanilla assets; verify these LocatorBar sprite ids when updating Minecraft.
 	private static final Identifier WAYPOINT_ARROW_UP = Identifier.withDefaultNamespace("hud/locator_bar_arrow_up");
 	private static final Identifier WAYPOINT_ARROW_DOWN = Identifier.withDefaultNamespace("hud/locator_bar_arrow_down");
+
+	private final LocalWaypointService localWaypoints;
+
+	CompassHudRenderer(LocalWaypointService localWaypoints) {
+		this.localWaypoints = localWaypoints;
+	}
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
-		if (player == null || minecraft.level == null) {
+		if (!ModConfig.get().compassHudEnabled || player == null || minecraft.level == null) {
 			return;
 		}
 
@@ -90,7 +102,10 @@ public final class CompassHudRenderer implements HudElement {
 		graphics.disableScissor();
 
 		renderCenterMarker(graphics, font, centerX);
-		renderWaypoints(graphics, deltaTracker, minecraft, player, minecraft.level, centerX);
+		if (ModConfig.get().compassVanillaWaypointMarkersEnabled) {
+			renderWaypoints(graphics, deltaTracker, minecraft, player, minecraft.level, centerX);
+		}
+		renderLocalWaypoints(graphics, minecraft, player, centerX, bearing);
 	}
 
 	/**
@@ -212,6 +227,43 @@ public final class CompassHudRenderer implements HudElement {
 		waypointManager.forEachWaypoint(player, waypoint ->
 			renderWaypoint(graphics, level, camera, gameRenderer, partialTick, waypointStyles, player, centerX, waypoint));
 		graphics.disableScissor();
+	}
+
+	private void renderLocalWaypoints(GuiGraphicsExtractor graphics, Minecraft minecraft, LocalPlayer player,
+			int centerX, float bearing) {
+		int left = centerX - HUD_WIDTH / 2;
+		int right = centerX + HUD_WIDTH / 2;
+		graphics.enableScissor(left, HUD_Y, right, HUD_Y + BAR_HEIGHT);
+		for (WaypointMarker marker : localWaypoints.visibleMarkers(minecraft, player)) {
+			float markerBearing = LocalWaypointRules.bearingTo(player.getX(), player.getZ(), marker);
+			if (Math.abs(angularDifference(markerBearing, bearing)) > VISIBLE_HALF_RANGE_DEGREES) {
+				continue;
+			}
+
+			int center = angleToScreenX(markerBearing, bearing, centerX);
+			renderLocalWaypointDot(graphics, center, marker.color);
+		}
+		graphics.disableScissor();
+	}
+
+	/** Draws local markers as an outlined map-pin diamond, distinct from vanilla locator sprites. */
+	private static void renderLocalWaypointDot(GuiGraphicsExtractor graphics, int centerX, int color) {
+		int top = LOCAL_WAYPOINT_ROW_Y;
+		int fillColor = 0xFF000000 | (color & 0x00FFFFFF);
+
+		graphics.fill(centerX, top, centerX + 1, top + 1, LOCAL_WAYPOINT_OUTLINE_COLOR);
+		graphics.fill(centerX - 1, top + 1, centerX + 2, top + 2, LOCAL_WAYPOINT_OUTLINE_COLOR);
+		graphics.fill(centerX - 2, top + 2, centerX + 3, top + 3, LOCAL_WAYPOINT_OUTLINE_COLOR);
+		graphics.fill(centerX - 3, top + 3, centerX + 4, top + 4, LOCAL_WAYPOINT_OUTLINE_COLOR);
+		graphics.fill(centerX - 2, top + 4, centerX + 3, top + 5, LOCAL_WAYPOINT_OUTLINE_COLOR);
+		graphics.fill(centerX - 1, top + 5, centerX + 2, top + 6, LOCAL_WAYPOINT_OUTLINE_COLOR);
+		graphics.fill(centerX, top + 6, centerX + 1, top + 7, LOCAL_WAYPOINT_OUTLINE_COLOR);
+
+		graphics.fill(centerX, top + 1, centerX + 1, top + 2, fillColor);
+		graphics.fill(centerX - 1, top + 2, centerX + 2, top + 3, fillColor);
+		graphics.fill(centerX - 2, top + 3, centerX + 3, top + 4, fillColor);
+		graphics.fill(centerX - 1, top + 4, centerX + 2, top + 5, fillColor);
+		graphics.fill(centerX, top + 5, centerX + 1, top + 6, fillColor);
 	}
 
 	private static void renderWaypoint(GuiGraphicsExtractor graphics, Level level, Camera camera, GameRenderer gameRenderer,

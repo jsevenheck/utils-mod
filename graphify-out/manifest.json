@@ -5,9 +5,9 @@
     "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/config/ModConfig.java": {
-    "mtime": 1785886366.3108928,
-    "ast_hash": "dba777fcea3f2efffe39828f1eeac11d",
-    "semantic_hash": "dba777fcea3f2efffe39828f1eeac11d"
+    "mtime": 1785926183.0663266,
+    "ast_hash": "4cfcd42de6f78ea6c3d6b6b4ce5298bc",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/FeatureRegistry.java": {
     "mtime": 1785886363.6573386,
@@ -20,29 +20,29 @@
     "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassHudFeature.java": {
-    "mtime": 1785883020.88378,
-    "ast_hash": "3c675faa09276de252eb5bb49160822f",
-    "semantic_hash": "3c675faa09276de252eb5bb49160822f"
+    "mtime": 1785926026.7793205,
+    "ast_hash": "07ea4da48c1e11ad05a00f08da39baa8",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassHudRenderer.java": {
-    "mtime": 1785920718.6052737,
-    "ast_hash": "412f5f9252b2d9d7f9e40a7db051d76e",
+    "mtime": 1785934127.7504601,
+    "ast_hash": "6b3f092bb1474bec9f0c07fc479eba38",
     "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/InventoryClickExecutor.java": {
-    "mtime": 1785884594.3498416,
-    "ast_hash": "1f97e9b9fe4af0f52ff8f69897fd9195",
-    "semantic_hash": "1f97e9b9fe4af0f52ff8f69897fd9195"
+    "mtime": 1785935542.8011105,
+    "ast_hash": "f29b63ea155385a9fdad80162a2d03ea",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/InventorySortController.java": {
-    "mtime": 1785886368.9541142,
-    "ast_hash": "8f16a2112ed0eac3564f02623d815eee",
-    "semantic_hash": "8f16a2112ed0eac3564f02623d815eee"
+    "mtime": 1785935522.01911,
+    "ast_hash": "bdb6ac565014ee85e87ded904b1f1880",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/InventorySortFeature.java": {
-    "mtime": 1785883020.8867798,
-    "ast_hash": "723d281b760a1cb9c5a6bb5c2a4b1e93",
-    "semantic_hash": "723d281b760a1cb9c5a6bb5c2a4b1e93"
+    "mtime": 1785935591.516827,
+    "ast_hash": "71e229adf8d147a785f92f152d49fc1e",
+    "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/ItemIdentities.java": {
     "mtime": 1785921341.6939473,
@@ -55,9 +55,9 @@
     "semantic_hash": "65cfb7ff6ca88a81dd57cb823db54cf2"
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/SortableSlotResolver.java": {
-    "mtime": 1785883020.88878,
-    "ast_hash": "702056518e7ed0dbb79337be3e903e7c",
-    "semantic_hash": "702056518e7ed0dbb79337be3e903e7c"
+    "mtime": 1785935536.4674964,
+    "ast_hash": "95658bf1086ca2c10a4effd78f016f7e",
+    "semantic_hash": ""
   },
   "src/main/java/io/github/jsevenheck/utilsmod/UtilsMod.java": {
     "mtime": 1785883020.8937805,
@@ -100,8 +100,8 @@
     "semantic_hash": "d65eb93d154a0715e44fcf5417ba6057"
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleFeature.java": {
-    "mtime": 1785887521.5556479,
-    "ast_hash": "120ebcb9b6cf62739f58a20bc603faa8",
+    "mtime": 1785935548.805791,
+    "ast_hash": "e324f9bbca71926f2bbc10584e9f8283",
     "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleInteractionExecutor.java": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/feature/bundle/BundleScreen.java": {
-    "mtime": 1785887369.0644207,
-    "ast_hash": "d3b6bcaad529c60717c469a9ec0d61d5",
+    "mtime": 1785935591.516827,
+    "ast_hash": "062d507acc8f28c92f39bebd8f589917",
     "semantic_hash": ""
   },
   "src/client/java/io/github/jsevenheck/utilsmod/client/mixin/AbstractContainerScreenAccessor.java": {
@@ -137,6 +137,46 @@
   "src/test/java/io/github/jsevenheck/utilsmod/client/feature/inventorysort/ItemIdentitiesTest.java": {
     "mtime": 1785921341.6939473,
     "ast_hash": "ba5f46ef0eb87678e6bc781eb9da734d",
+    "semantic_hash": ""
+  },
+  "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/CompassWaypointCommands.java": {
+    "mtime": 1785935143.5708556,
+    "ast_hash": "fcaa04af7412e7ee94a28b4ea3395969",
+    "semantic_hash": ""
+  },
+  "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/LocalWaypointService.java": {
+    "mtime": 1785935138.0212355,
+    "ast_hash": "35ef3dc544e12d41c1200034bfb9534a",
+    "semantic_hash": ""
+  },
+  "src/client/java/io/github/jsevenheck/utilsmod/client/feature/compass/WaypointProfileResolver.java": {
+    "mtime": 1785926300.3326542,
+    "ast_hash": "c59b636dc88e10add53b5d6f3919a6a8",
+    "semantic_hash": ""
+  },
+  "src/main/java/io/github/jsevenheck/utilsmod/feature/compass/LocalWaypointRules.java": {
+    "mtime": 1785934405.1309211,
+    "ast_hash": "bdf1312762959a58a87123ec14833677",
+    "semantic_hash": ""
+  },
+  "src/main/java/io/github/jsevenheck/utilsmod/feature/compass/WaypointMarker.java": {
+    "mtime": 1785934084.7122474,
+    "ast_hash": "7253aacae13445b1e00f5e7defac9713",
+    "semantic_hash": ""
+  },
+  "src/main/java/io/github/jsevenheck/utilsmod/feature/compass/WaypointProfile.java": {
+    "mtime": 1785926594.6185563,
+    "ast_hash": "1ac62c10a69b84455d7b687924288008",
+    "semantic_hash": ""
+  },
+  "src/test/java/io/github/jsevenheck/utilsmod/feature/compass/LocalWaypointRulesTest.java": {
+    "mtime": 1785934432.073638,
+    "ast_hash": "861f8909f002147d614b6feaae1eea44",
+    "semantic_hash": ""
+  },
+  "src/test/java/io/github/jsevenheck/utilsmod/feature/compass/WaypointProfileTest.java": {
+    "mtime": 1785926093.3734791,
+    "ast_hash": "ce3b2b502b97e388ff756891646e7c9f",
     "semantic_hash": ""
   }
 }

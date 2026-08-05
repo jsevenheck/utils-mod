@@ -33,8 +33,9 @@ Run `./gradlew clean build` if you want a fully fresh build (clears cached/up-to
 - [ ] `depends` in `fabric.mod.json` matches what you actually require: `fabricloader >= 0.19.3`, `minecraft ~26.2`, `java >= 25`, `fabric-api *`. Tighten `fabric-api`'s version range if you rely on APIs added in a specific release.
 - [ ] `icon.png` (`src/main/resources/assets/compass-hud/icon.png`) looks right — this is what shows up as the project/file thumbnail.
 - [ ] No leftover debug logging or test code.
-- [ ] Bundle UI smoke-tested: Shift + Right Click opening, arbitrary extraction, Shift-extraction, insertion, remainder handling, close/reopen synchronization, and sorter-operation exclusion.
-- [ ] README and `docs/local-development.md` describe the current three-feature scope and Bundle limitations.
+- [ ] Bundle UI smoke-tested: Shift + Right Click opening, arbitrary extraction, Shift-extraction, insertion, remainder handling, close/reopen synchronization, pressing the inventory-sort key (`R`) while the Bundle view is open, and sorter-operation exclusion.
+- [ ] Compass/local-waypoint smoke-tested: add/list/rename/hide/show/remove commands, persistence after reconnect, dimension filtering, per-world/per-server separation, and HUD visibility toggles.
+- [ ] README, `docs/features.md`, `docs/local-development.md`, and `docs/CURSEFORGE_DESCRIPTION.md` describe the current feature set and its limitations.
 
 ## 4. Publishing to CurseForge
 

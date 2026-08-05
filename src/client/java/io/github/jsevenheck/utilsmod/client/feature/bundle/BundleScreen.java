@@ -22,16 +22,19 @@ import net.minecraft.core.component.DataComponents;
 import java.util.List;
 
 /**
- * A client-only presentation layer over the player's real InventoryMenu.  Bundle entries are
- * virtual slots; player-inventory clicks still target the real menu slot indices.
+ * A client-only presentation layer over the player's real InventoryMenu. Bundle entries are virtual
+ * slots; player-inventory clicks still target the real menu slot indices. Bundle operations claim the
+ * shared operation lock only while executing, so the inventory sorter can also run from this screen.
  */
 public final class BundleScreen extends Screen {
 
     private static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
     private static final int PAGE_SIZE = 12;
     private static final int COLUMNS = 4;
+    private static final int PLAYER_COLUMNS = 9;
     private static final int SLOT_SIZE = 18;
-    private static final int PANEL_WIDTH = COLUMNS * SLOT_SIZE + 8;
+    // The player inventory is wider than the four-column Bundle grid.
+    private static final int PANEL_WIDTH = PLAYER_COLUMNS * SLOT_SIZE + 8;
     private static final String LOCK_OWNER = "bundle-ui";
 
     private final AbstractContainerMenu menu;
@@ -92,7 +95,7 @@ public final class BundleScreen extends Screen {
         } else {
             for (int visible = 0; visible < Math.min(PAGE_SIZE, items.size() - start); visible++) {
                 ItemStack stack = items.get(start + visible);
-                int x = slotX(visible % COLUMNS);
+                int x = bundleSlotX(visible % COLUMNS);
                 int y = slotY(visible / COLUMNS, bundleGridTop);
                 drawSlot(graphics, x, y, stack, mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE);
             }
@@ -100,12 +103,12 @@ public final class BundleScreen extends Screen {
 
         graphics.text(this.font, Component.translatable("container.inventory"), left, playerGridTop - 12, -12566464, false);
         for (int row = 0; row < 3; row++) {
-            for (int column = 0; column < 9; column++) {
+            for (int column = 0; column < PLAYER_COLUMNS; column++) {
                 int slotIndex = InventoryMenu.INV_SLOT_START + row * 9 + column;
                 drawRealSlot(graphics, slotIndex, left + column * SLOT_SIZE + 4, playerGridTop + row * SLOT_SIZE, mouseX, mouseY);
             }
         }
-        for (int column = 0; column < 9; column++) {
+        for (int column = 0; column < PLAYER_COLUMNS; column++) {
             int slotIndex = InventoryMenu.USE_ROW_SLOT_START + column;
             drawRealSlot(graphics, slotIndex, left + column * SLOT_SIZE + 4, hotbarTop, mouseX, mouseY);
         }
@@ -149,7 +152,7 @@ public final class BundleScreen extends Screen {
                 page * PAGE_SIZE + bundleEntry,
                 event.hasShiftDown()
             );
-            if (plan != null) {
+            if (plan != null && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {
                 activeExecution = new BundleInteractionExecutor(this, menu, inventory, bundleSlotIndex, plan);
             }
             return true;
@@ -160,15 +163,20 @@ public final class BundleScreen extends Screen {
             return false;
         }
         if (!menu.getCarried().isEmpty()) {
-            if (sourceStillValid()) {
-                minecraft.gameMode.handleContainerInput(menu.containerId, playerSlot, event.button(), ContainerInput.PICKUP, minecraft.player);
+            if (sourceStillValid() && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {
+                try {
+                    minecraft.gameMode.handleContainerInput(menu.containerId, playerSlot, event.button(),
+                        ContainerInput.PICKUP, minecraft.player);
+                } finally {
+                    InventoryOperationLock.release(LOCK_OWNER);
+                }
             }
             return true;
         }
 
         if (!menu.getSlot(playerSlot).getItem().isEmpty()) {
             BundleInteractionPlanner.Plan plan = BundleInteractionPlanner.insert(menu, bundleSlotIndex, playerSlot);
-            if (plan != null) {
+            if (plan != null && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {
                 activeExecution = new BundleInteractionExecutor(this, menu, inventory, bundleSlotIndex, plan);
             }
         }
@@ -297,7 +305,7 @@ public final class BundleScreen extends Screen {
         int start = page * PAGE_SIZE;
         int visible = Math.min(PAGE_SIZE, itemCount - start);
         for (int i = 0; i < visible; i++) {
-            int x = slotX(i % COLUMNS);
+            int x = bundleSlotX(i % COLUMNS);
             int y = slotY(i / COLUMNS, bundleGridTop);
             if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
                 return i;
@@ -308,7 +316,7 @@ public final class BundleScreen extends Screen {
 
     private int hoveredPlayerSlot(double mouseX, double mouseY) {
         for (int row = 0; row < 3; row++) {
-            for (int column = 0; column < 9; column++) {
+            for (int column = 0; column < PLAYER_COLUMNS; column++) {
                 int x = left + column * SLOT_SIZE + 4;
                 int y = playerGridTop + row * SLOT_SIZE;
                 if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
@@ -316,7 +324,7 @@ public final class BundleScreen extends Screen {
                 }
             }
         }
-        for (int column = 0; column < 9; column++) {
+        for (int column = 0; column < PLAYER_COLUMNS; column++) {
             int x = left + column * SLOT_SIZE + 4;
             if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= hotbarTop && mouseY < hotbarTop + SLOT_SIZE) {
                 return InventoryMenu.USE_ROW_SLOT_START + column;
@@ -325,8 +333,9 @@ public final class BundleScreen extends Screen {
         return -1;
     }
 
-    private int slotX(int column) {
-        return left + 4 + column * SLOT_SIZE;
+    private int bundleSlotX(int column) {
+        int bundleGridWidth = COLUMNS * SLOT_SIZE;
+        return left + (PANEL_WIDTH - bundleGridWidth) / 2 + column * SLOT_SIZE;
     }
 
     private static int slotY(int row, int gridTop) {

@@ -1,6 +1,7 @@
 package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 
 import io.github.jsevenheck.utilsmod.client.config.ModConfig;
+import io.github.jsevenheck.utilsmod.client.feature.bundle.BundleScreen;
 import io.github.jsevenheck.utilsmod.feature.InventoryOperationLock;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.ClickOperation;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.InventoryClickPlanner;
@@ -45,7 +46,7 @@ final class InventorySortController {
             return;
         }
 
-        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?> _)) {
+        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?> || minecraft.gui.screen() instanceof BundleScreen)) {
             // No relevant screen open at all -- do nothing, silently, as if the key wasn't bound to anything here.
             return;
         }

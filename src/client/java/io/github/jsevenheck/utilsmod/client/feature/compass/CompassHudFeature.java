@@ -1,6 +1,7 @@
 package io.github.jsevenheck.utilsmod.client.feature.compass;
 
 import io.github.jsevenheck.utilsmod.UtilsMod;
+import io.github.jsevenheck.utilsmod.client.config.ModConfig;
 import io.github.jsevenheck.utilsmod.client.feature.ModFeature;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 
@@ -9,6 +10,8 @@ public final class CompassHudFeature implements ModFeature {
 
     @Override
     public void initializeClient() {
-        HudElementRegistry.addLast(UtilsMod.id("compass"), new CompassHudRenderer());
+        LocalWaypointService localWaypoints = new LocalWaypointService(ModConfig.get());
+        HudElementRegistry.addLast(UtilsMod.id("compass"), new CompassHudRenderer(localWaypoints));
+        CompassWaypointCommands.register(localWaypoints);
     }
 }

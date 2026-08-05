@@ -1,5 +1,6 @@
 package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 
+import io.github.jsevenheck.utilsmod.client.feature.bundle.BundleScreen;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.ClickOperation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -94,11 +95,14 @@ final class InventoryClickExecutor {
     }
 
     private boolean stillValid(Minecraft minecraft) {
-        return minecraft.player != null
-            && minecraft.level != null
-            && minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen
-            && screen.getMenu() == menu
-            && menu.containerId == containerId;
+        if (minecraft.player == null || minecraft.level == null || menu.containerId != containerId) {
+            return false;
+        }
+        if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen) {
+            return screen.getMenu() == menu;
+        }
+        // BundleScreen is a virtual view over the same real player InventoryMenu.
+        return minecraft.gui.screen() instanceof BundleScreen && minecraft.player.containerMenu == menu;
     }
 
     private boolean matches(ClickOperation op) {

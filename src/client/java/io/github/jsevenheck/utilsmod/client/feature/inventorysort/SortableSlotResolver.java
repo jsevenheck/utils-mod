@@ -1,5 +1,6 @@
 package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 
+import io.github.jsevenheck.utilsmod.client.feature.bundle.BundleScreen;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.SortSlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -51,11 +52,15 @@ final class SortableSlotResolver {
         if (player == null || player.isSpectator()) {
             return Optional.empty();
         }
-        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen)) {
+        AbstractContainerMenu menu;
+        if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen) {
+            menu = screen.getMenu();
+        } else if (minecraft.gui.screen() instanceof BundleScreen) {
+            // BundleScreen is a virtual Screen over the player's real InventoryMenu.
+            menu = player.containerMenu;
+        } else {
             return Optional.empty();
         }
-
-        AbstractContainerMenu menu = screen.getMenu();
         boolean isPlayerInventoryMenu = menu instanceof InventoryMenu;
         boolean isChestLike = menu instanceof ChestMenu
             || menu instanceof HopperMenu

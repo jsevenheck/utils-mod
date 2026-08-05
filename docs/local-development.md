@@ -76,6 +76,10 @@ When testing changes to `CompassHudRenderer`, verify:
 - Looks correct at different GUI scales (`Options → Video Settings → GUI Scale`).
 - No console errors/exceptions in `run/logs/latest.log` related to `compass-hud`.
 - Waypoint dots (other players) on the compass strip: these only render when there's another real player nearby, so a single-instance dev session shows nothing there by design. To test: pause your `runClient` world and **Open to LAN**, then launch a second client (a second `runClient` run, or a vanilla install/second account) and join `localhost:<port>`. Verify the other player's dot tracks their direction, scrolls with the compass, and shows an up/down arrow when they're above/below your view.
+- Local waypoints: run `/compasshud waypoint add Base` or `/compasshud waypoint addcolor red Base`, turn until the outlined map-pin is centred at the correct bearing, then reconnect and confirm it persists. Test `/list`, `/hide`, `/show`, `/color Base FF8800`, `/color Base red`, `/rename`, and `/remove`. Confirm autocomplete offers all ten named colours with coloured tooltips.
+- Local waypoint isolation: create a marker in one singleplayer save and confirm it does not appear in another save; repeat with two multiplayer servers where possible.
+- Dimension filtering: add an Overworld marker, enter the Nether, and confirm the marker is not projected there. Return to the Overworld and confirm it appears again.
+- Visibility settings: test `/compasshud setting hud|local|vanilla on|off`; confirm every setting hides only its intended HUD elements and retains marker data.
 
 ## Manual test checklist for the Bundle UI
 
@@ -89,5 +93,5 @@ When testing changes to the Bundle feature, use a survival player inventory and 
 - Click an allowed and a disallowed inventory item for insertion; vanilla Bundle capacity/restrictions are respected and remainders return to their source slot.
 - Shift-click an inventory stack into the Bundle, then reopen it and confirm the synchronized contents.
 - Close with Escape and the inventory key; confirm the normal inventory screen returns and the cursor is safe.
-- Start a sort operation and confirm Bundle manipulation cannot run concurrently; start a Bundle operation and confirm sorting cannot run concurrently.
+- Open the Bundle view and press the inventory-sort key (`R` by default); confirm the real player inventory sorts while the Bundle view remains usable. Confirm Bundle manipulation cannot run concurrently with sorting, and start a Bundle operation to confirm sorting cannot run concurrently.
 - Repeat the checks in an integrated singleplayer world and, where possible, on a vanilla-compatible multiplayer server. Some servers or anti-cheat systems may reject automated timing; the operation must cancel to the server state.
