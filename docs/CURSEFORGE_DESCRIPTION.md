@@ -1,4 +1,4 @@
-# Utils Mod
+# Gromel’s Utils
 
 > **A lightweight client-side Fabric utility mod with a compass HUD, private local waypoints, safe inventory sorting, and a better Bundle interface.**
 
