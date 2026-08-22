@@ -12,6 +12,13 @@ Vanilla locator markers and private local waypoint markers can be controlled ind
 The HUD is disabled outside a loaded world. Server-provided locator markers only appear when the
 server actually provides them; a solo singleplayer world has no other player marker to display.
 
+Vanilla's own locator bar (above the hotbar) normally gets replaced by the XP bar for 5 seconds every
+time the player gains experience or closes an anvil/enchanting table screen — intended vanilla
+behaviour, but it hides other players' dots almost continuously during normal play (e.g. grinding
+mobs). With `keepVanillaLocatorBarVisible` on (default), a small mixin keeps vanilla's locator bar
+visible instead. This only affects vanilla's own bar; the compass HUD strip at the top already shows
+locator markers unconditionally whenever `compassVanillaWaypointMarkersEnabled` is on.
+
 ## Local waypoints
 
 Local waypoints are stored in `config/compass-hud.json` and remain private to the client. Profiles are
@@ -84,9 +91,13 @@ Pressing the inventory-sort key (`R` by default) while the Bundle screen is open
 main inventory while keeping the Bundle view open. Bundle interactions and sorting cannot manipulate the
 same menu concurrently.
 
+Clicking anywhere outside every slot (Bundle grid or player inventory/hotbar) while carrying an item
+throws it into the world, matching vanilla's click-outside-to-drop behaviour (left click throws the
+whole stack, right click throws one item).
+
 The Bundle UI is client-side and does not create a custom server menu. External-container Bundles,
-creative manipulation, nested workflows, drag-and-drop, mass filling, Bundle-content sorting, and a
-separate configurable open key are intentionally unsupported.
+creative manipulation, nested workflows, drag-distributing one stack across multiple slots, mass
+filling, Bundle-content sorting, and a separate configurable open key are intentionally unsupported.
 
 ## Configuration
 
@@ -96,6 +107,7 @@ All settings use `config/compass-hud.json`:
 | --- | --- | --- |
 | `compassHudEnabled` | `true` | Show the compass HUD. |
 | `compassVanillaWaypointMarkersEnabled` | `true` | Show server-provided locator markers. |
+| `keepVanillaLocatorBarVisible` | `true` | Keep vanilla's own locator bar from being replaced by the XP bar. |
 | `localWaypointMarkersEnabled` | `true` | Show local waypoint markers. |
 | `maxVisibleLocalWaypointMarkers` | `8` | Maximum nearest local markers considered (`1`–`32`). |
 | `inventorySortEnabled` | `true` | Enable inventory sorting. |

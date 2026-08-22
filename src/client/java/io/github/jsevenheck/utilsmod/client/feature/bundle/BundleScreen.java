@@ -160,7 +160,21 @@ public final class BundleScreen extends Screen {
 
         int playerSlot = hoveredPlayerSlot(event.x(), event.y());
         if (playerSlot < 0) {
-            return false;
+            if (menu.getCarried().isEmpty()) {
+                return false;
+            }
+            // Clicking outside every known slot while carrying an item mirrors vanilla's
+            // AbstractContainerScreen behaviour: it throws the carried stack (slot -999) instead
+            // of silently doing nothing, so dragging an item out of this custom UI can drop it.
+            if (sourceStillValid() && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {
+                try {
+                    minecraft.gameMode.handleContainerInput(menu.containerId, -999, event.button(),
+                        ContainerInput.PICKUP, minecraft.player);
+                } finally {
+                    InventoryOperationLock.release(LOCK_OWNER);
+                }
+            }
+            return true;
         }
         if (!menu.getCarried().isEmpty()) {
             if (sourceStillValid() && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {

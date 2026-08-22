@@ -32,7 +32,7 @@ CI (`.github/workflows/build.yml`) runs `./gradlew build` on Ubuntu 24.04 with J
 - Minecraft 26.2 · Fabric Loader 0.19.3 · Fabric API `0.156.0+26.2`
 - Fabric Loom `1.17-SNAPSHOT` (Gradle plugin `net.fabricmc.fabric-loom`)
 - Split source sets (`splitEnvironmentSourceSets()`): `src/main` + `src/client`
-- Mixins (SpongePowered) with a client config — the Bundle opening hit-test uses one accessor mixin because the vanilla GUI origin is protected; otherwise prefer Fabric API events first
+- Mixins (SpongePowered) with a client config — the Bundle opening hit-test uses one accessor mixin because the vanilla GUI origin is protected, and the compass HUD uses one injector mixin to keep vanilla's own locator bar visible instead of being replaced by the XP bar; otherwise prefer Fabric API events first
 - SLF4J for logging; JUnit 5 (`junit-bom`/`junit-jupiter`/`junit-platform-launcher`) for `src/test`; Gson (bundled with the game) for config persistence — no new runtime dependencies were added for any of this
 - All versions/pins live in `gradle.properties`
 
@@ -83,6 +83,7 @@ src/
       BundleInteractionPlanner.java  <- validated vanilla click sequences for extraction/insertion
       BundleInteractionExecutor.java <- tick-paced execution against the real InventoryMenu
     mixin/AbstractContainerScreenAccessor.java <- client GUI-origin accessor for opening hit-tests
+    mixin/HudLocatorBarMixin.java <- forces vanilla's Hud to keep the locator bar over the XP bar
   client/resources/
     compass-hud.client.mixins.json  <- client mixin config
   test/java/io/github/jsevenheck/utilsmod/
@@ -115,13 +116,13 @@ The `io.github.jsevenheck.utilsmod` package (both source sets) is the only base 
 
 | Config file | Package | Target |
 | ----------- | ------- | ------ |
-| `compass-hud.client.mixins.json` | `io.github.jsevenheck.utilsmod.client.mixin` | `AbstractContainerScreen` GUI-origin fields |
+| `compass-hud.client.mixins.json` | `io.github.jsevenheck.utilsmod.client.mixin` | `AbstractContainerScreen` GUI-origin fields; `Hud#willPrioritizeExperienceInfo` |
 
 Rules:
 - Every mixin class must be registered in its config file or it will not load.
 - `injectors.defaultRequire = 1` — injections must resolve or the game fails to load.
 - `overwrites.requireAnnotations = true` — all overrides must carry the required annotations.
-- Only the Bundle feature currently needs a mixin: the accessor exposes the protected GUI origin for opening hit-tests. The other features use public Fabric API events. Only add another mixin if there's truly no event/API alternative.
+- The Bundle feature's accessor mixin exposes the protected GUI origin for opening hit-tests. The compass feature's `HudLocatorBarMixin` injects into vanilla's private `Hud#willPrioritizeExperienceInfo()` (`@Inject`, cancellable) and forces it to return `false` when `ModConfig#keepVanillaLocatorBarVisible` is on, since there is no Fabric API event for that vanilla-internal HUD priority decision. The other features use public Fabric API events. Only add another mixin if there's truly no event/API alternative.
 
 ## Feature documentation
 
