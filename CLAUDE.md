@@ -32,7 +32,7 @@ CI (`.github/workflows/build.yml`) runs `./gradlew build` on Ubuntu 24.04 with J
 - Minecraft 26.2 · Fabric Loader 0.19.3 · Fabric API `0.156.0+26.2`
 - Fabric Loom `1.17-SNAPSHOT` (Gradle plugin `net.fabricmc.fabric-loom`)
 - Split source sets (`splitEnvironmentSourceSets()`): `src/main` + `src/client`
-- Mixins (SpongePowered) with a client config — the Bundle opening hit-test uses one accessor mixin because the vanilla GUI origin is protected, and the compass HUD uses one injector mixin to keep vanilla's own locator bar visible instead of being replaced by the XP bar; otherwise prefer Fabric API events first
+- Mixins (SpongePowered) with a client config — the Bundle opening hit-test uses one accessor mixin because the vanilla GUI origin is protected; otherwise prefer Fabric API events first
 - SLF4J for logging; JUnit 5 (`junit-bom`/`junit-jupiter`/`junit-platform-launcher`) for `src/test`; Gson (bundled with the game) for config persistence — no new runtime dependencies were added for any of this
 - All versions/pins live in `gradle.properties`
 
@@ -75,7 +75,7 @@ src/
       InventorySortController.java  <- package-private orchestration: resolve -> plan -> hand off to the executor
       InventoryClickExecutor.java   <- package-private tick-driven playback of a planned click queue
       SortableSlotResolver.java     <- package-private: current screen/menu -> sortable SortSlots (or none)
-      SortSession.java              <- package-private record: menu + player-section slots + container-section slots
+      SortSession.java              <- package-private record: menu + the chest's own sortable slots
       ItemIdentities.java           <- package-private: ItemStack -> ItemIdentity (component-based key)
     bundle/
       BundleFeature.java             <- Shift + Right Click entry point for the client Bundle screen
@@ -83,7 +83,6 @@ src/
       BundleInteractionPlanner.java  <- validated vanilla click sequences for extraction/insertion
       BundleInteractionExecutor.java <- tick-paced execution against the real InventoryMenu
     mixin/AbstractContainerScreenAccessor.java <- client GUI-origin accessor for opening hit-tests
-    mixin/HudLocatorBarMixin.java <- forces vanilla's Hud to keep the locator bar over the XP bar
   client/resources/
     compass-hud.client.mixins.json  <- client mixin config
   test/java/io/github/jsevenheck/utilsmod/
@@ -110,19 +109,19 @@ The `io.github.jsevenheck.utilsmod` package (both source sets) is the only base 
 - `ModFeature` is a one-method interface (`initializeClient()`); each feature under `client/feature/<name>/` implements it and does all of its own Fabric API registration inside that method.
 - `FeatureRegistry` holds a static `List<ModFeature>` (currently `CompassHudFeature`, `InventorySortFeature`, `BundleFeature`) and calls `initializeClient()` on each from `UtilsModClient`. To add a feature, implement `ModFeature` in a new `feature/<name>/` package and add it to that list — no other wiring is needed.
 - Shared client-side settings for all features live in one `ModConfig` (Gson JSON at `config/compass-hud.json`, lazy singleton via `ModConfig.get()`); add new fields there rather than inventing a second config file.
-- `InventoryOperationLock` is the shared, Minecraft-independent exclusion guard. Opening the Bundle screen briefly claims it to exclude a concurrent sort, then Bundle interactions claim it only while executing. The inventory sorter can therefore sort the real player menu while the virtual Bundle screen remains open, while clicks and Bundle operations still cannot overlap.
+- `InventoryOperationLock` is the shared, Minecraft-independent exclusion guard. Opening the Bundle screen briefly claims it to exclude a concurrent sort, then Bundle interactions claim it only while executing, so clicks and Bundle operations cannot overlap. Inventory sorting only ever targets chest slots (see below), never the player's own inventory, so the two features no longer contend over the same menu in practice; the lock is still acquired defensively.
 
 ### Mixin configs
 
 | Config file | Package | Target |
 | ----------- | ------- | ------ |
-| `compass-hud.client.mixins.json` | `io.github.jsevenheck.utilsmod.client.mixin` | `AbstractContainerScreen` GUI-origin fields; `Hud#willPrioritizeExperienceInfo` |
+| `compass-hud.client.mixins.json` | `io.github.jsevenheck.utilsmod.client.mixin` | `AbstractContainerScreen` GUI-origin fields |
 
 Rules:
 - Every mixin class must be registered in its config file or it will not load.
 - `injectors.defaultRequire = 1` — injections must resolve or the game fails to load.
 - `overwrites.requireAnnotations = true` — all overrides must carry the required annotations.
-- The Bundle feature's accessor mixin exposes the protected GUI origin for opening hit-tests. The compass feature's `HudLocatorBarMixin` injects into vanilla's private `Hud#willPrioritizeExperienceInfo()` (`@Inject`, cancellable) and forces it to return `false` when `ModConfig#keepVanillaLocatorBarVisible` is on, since there is no Fabric API event for that vanilla-internal HUD priority decision. The other features use public Fabric API events. Only add another mixin if there's truly no event/API alternative.
+- Only the Bundle feature currently needs a mixin: the accessor exposes the protected GUI origin for opening hit-tests. The other features use public Fabric API events. Only add another mixin if there's truly no event/API alternative.
 
 ## Feature documentation
 

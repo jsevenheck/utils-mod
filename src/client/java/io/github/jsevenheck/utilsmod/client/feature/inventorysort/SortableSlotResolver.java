@@ -1,6 +1,5 @@
 package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 
-import io.github.jsevenheck.utilsmod.client.feature.bundle.BundleScreen;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.SortSlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -8,11 +7,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.DispenserMenu;
-import net.minecraft.world.inventory.HopperMenu;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.ShulkerBoxMenu;
-import net.minecraft.world.inventory.ShulkerBoxSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,23 +18,16 @@ import java.util.Optional;
  * Identifies which slots of the currently open screen are safe to sort, purely from real menu/slot
  * metadata and slot ownership -- never from hardcoded absolute slot indices.
  * <p>
- * Supported:
- * <ul>
- *   <li>The player's own inventory screen ({@link InventoryMenu}) and the player-inventory row shown
- *   at the bottom of any container screen: main inventory only (the hotbar is intentionally excluded), identified by the slot's backing
- *   container being the player's own {@link Inventory} and its container-local index being below
- *   {@link Inventory#INVENTORY_SIZE} (which already excludes armor/offhand, since those are exposed
- *   through equipment-backed indices at or above that bound) and the slot being a plain {@link Slot}
- *   (which already excludes the anonymous offhand slot subclass, defensively, even without the index
- *   check).</li>
- *   <li>Standard chest-like storage: {@link ChestMenu}, {@link HopperMenu}, {@link DispenserMenu} and
- *   {@link ShulkerBoxMenu}, each verified (via decompiled source) to expose their storage grid only
- *   through plain {@link Slot} (or, for shulker boxes, {@link ShulkerBoxSlot}, which only adds an
- *   item-fits-inside-a-shulker-box restriction) with no crafting/result/equipment slots mixed in.</li>
- * </ul>
- * Every other menu type (crafting result/input, furnace fuel/result, anvil, enchanting, brewing,
- * beacon, merchant, loom, stonecutter, cartography, smithing, grindstone, creative inventory, ...) is
- * simply not in this allow-list, so it is never touched -- an unknown or specialized menu fails safe.
+ * Supported: chests and double chests ({@link ChestMenu} only), verified (via decompiled source) to
+ * expose their storage grid only through plain {@link Slot} with no crafting/result/equipment slots
+ * mixed in. Only the chest's own slots are sorted -- the player's main inventory and hotbar shown at
+ * the bottom of the chest screen are intentionally left untouched, and the player's own inventory
+ * screen (with no chest open) has nothing to sort at all.
+ * <p>
+ * Every other menu type (the player inventory screen, hoppers, dispensers/droppers, shulker boxes,
+ * crafting result/input, furnace fuel/result, anvil, enchanting, brewing, beacon, merchant, loom,
+ * stonecutter, cartography, smithing, grindstone, creative inventory, ...) is simply not in this
+ * allow-list, so it is never touched -- an unknown or specialized menu fails safe.
  */
 final class SortableSlotResolver {
 
@@ -52,48 +39,27 @@ final class SortableSlotResolver {
         if (player == null || player.isSpectator()) {
             return Optional.empty();
         }
-        AbstractContainerMenu menu;
-        if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen) {
-            menu = screen.getMenu();
-        } else if (minecraft.gui.screen() instanceof BundleScreen) {
-            // BundleScreen is a virtual Screen over the player's real InventoryMenu.
-            menu = player.containerMenu;
-        } else {
+        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen)) {
             return Optional.empty();
         }
-        boolean isPlayerInventoryMenu = menu instanceof InventoryMenu;
-        boolean isChestLike = menu instanceof ChestMenu
-            || menu instanceof HopperMenu
-            || menu instanceof DispenserMenu
-            || menu instanceof ShulkerBoxMenu;
-        if (!isPlayerInventoryMenu && !isChestLike) {
+        AbstractContainerMenu menu = screen.getMenu();
+        if (!(menu instanceof ChestMenu)) {
             return Optional.empty();
         }
 
         Inventory playerInventory = player.getInventory();
-        List<SortSlot> playerSlots = new ArrayList<>();
-        List<SortSlot> containerSlots = new ArrayList<>();
+        List<SortSlot> slots = new ArrayList<>();
 
         for (Slot slot : menu.slots) {
             if (!slot.isActive() || slot.isFake()) {
                 continue;
             }
-
-            if (slot.container == playerInventory
-                && slot.getClass() == Slot.class
-                && slot.getContainerSlot() < Inventory.INVENTORY_SIZE) {
-                if (slot.getContainerSlot() < 9) {
-                    continue;
-                }
-                playerSlots.add(toSortSlot(slot));
-            } else if (isChestLike
-                && slot.container != playerInventory
-                && (slot.getClass() == Slot.class || slot.getClass() == ShulkerBoxSlot.class)) {
-                containerSlots.add(toSortSlot(slot));
+            if (slot.container != playerInventory && slot.getClass() == Slot.class) {
+                slots.add(toSortSlot(slot));
             }
         }
 
-        SortSession session = new SortSession(menu, playerSlots, containerSlots);
+        SortSession session = new SortSession(menu, slots);
         return session.isEmpty() ? Optional.empty() : Optional.of(session);
     }
 

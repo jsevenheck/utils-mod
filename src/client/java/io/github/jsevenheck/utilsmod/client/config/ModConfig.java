@@ -38,14 +38,6 @@ public final class ModConfig {
     /** Master switch for the inventory sort feature; the keybinding does nothing while this is off. */
     public boolean inventorySortEnabled = true;
 
-    /**
-     * When {@code true} (default, safer), the container section and the player inventory section of
-     * an open container screen are sorted as two independent pools: items never move between the
-     * container and the player's own inventory. When {@code false}, both sections are treated as one
-     * combined pool that may redistribute items across both.
-     */
-    public boolean sortSectionsIndependently = true;
-
     /** Client ticks between each queued click while a sort is running. */
     public int clickDelayTicks = 1;
 
@@ -66,18 +58,6 @@ public final class ModConfig {
 
     /** Maximum number of nearest local waypoint dots considered by the compass HUD. */
     public int maxVisibleLocalWaypointMarkers = 8;
-
-    /**
-     * When {@code true} (default), vanilla's own locator bar (above the hotbar) is kept visible
-     * instead of being temporarily replaced by the XP bar for 5 seconds every time the player
-     * gains experience or closes an anvil/enchanting table screen. That swap is vanilla's intended
-     * behaviour, not a bug, but it means other players' locator dots are hidden almost continuously
-     * during normal XP gain (e.g. grinding mobs). This only affects vanilla's bottom bar; the
-     * compass HUD strip at the top of the screen already shows vanilla locator markers
-     * unconditionally, independent of this setting, whenever {@link #compassVanillaWaypointMarkersEnabled}
-     * is on.
-     */
-    public boolean keepVanillaLocatorBarVisible = true;
 
     /** Schema version for {@link #waypointProfiles}. */
     public int waypointDataVersion = 1;

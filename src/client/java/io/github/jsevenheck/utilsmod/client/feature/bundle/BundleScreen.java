@@ -24,7 +24,8 @@ import java.util.List;
 /**
  * A client-only presentation layer over the player's real InventoryMenu. Bundle entries are virtual
  * slots; player-inventory clicks still target the real menu slot indices. Bundle operations claim the
- * shared operation lock only while executing, so the inventory sorter can also run from this screen.
+ * shared operation lock only while executing (the player's own inventory is not sortable, so this no
+ * longer needs to coexist with a running sort, but the lock is still acquired defensively).
  */
 public final class BundleScreen extends Screen {
 
@@ -142,15 +143,28 @@ public final class BundleScreen extends Screen {
         List<ItemStack> items = currentItems();
         int bundleEntry = hoveredBundleEntry(event.x(), event.y(), items.size());
         if (bundleEntry >= 0) {
+            boolean quickMove = event.hasShiftDown();
+            boolean rightClick = event.button() == 1;
+            int selectedIndex = page * PAGE_SIZE + bundleEntry;
             if (!menu.getCarried().isEmpty()) {
-                feedback("compass-hud.inventorysort.cursor_not_empty");
+                // Shift + Right Click again on the same kind of item tops up the carried stack by
+                // one more instead of refusing the click outright.
+                BundleInteractionPlanner.Plan additionalPlan = quickMove && rightClick
+                    ? BundleInteractionPlanner.extractAdditional(menu, bundleSlotIndex, selectedIndex)
+                    : null;
+                if (additionalPlan != null && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {
+                    activeExecution = new BundleInteractionExecutor(this, menu, inventory, bundleSlotIndex, additionalPlan);
+                } else {
+                    feedback("compass-hud.inventorysort.cursor_not_empty");
+                }
                 return true;
             }
             BundleInteractionPlanner.Plan plan = BundleInteractionPlanner.extract(
                 menu,
                 bundleSlotIndex,
-                page * PAGE_SIZE + bundleEntry,
-                event.hasShiftDown()
+                selectedIndex,
+                quickMove,
+                quickMove && rightClick
             );
             if (plan != null && InventoryOperationLock.tryAcquire(LOCK_OWNER)) {
                 activeExecution = new BundleInteractionExecutor(this, menu, inventory, bundleSlotIndex, plan);

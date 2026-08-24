@@ -69,7 +69,8 @@ final class BundleInteractionExecutor {
         BundleInteractionPlanner.BundleStep step = plan.steps().get(stepIndex);
         if (step instanceof BundleInteractionPlanner.BundleSelectionStep selection) {
             ItemStack actual = menu.getSlot(selection.bundleSlotIndex()).getItem();
-            if (!BundleInteractionPlanner.same(actual, selection.expectedBefore()) || !menu.getCarried().isEmpty()) {
+            if (!BundleInteractionPlanner.same(actual, selection.expectedBefore())
+                || !BundleInteractionPlanner.same(menu.getCarried(), selection.expectedCursor())) {
                 aborted = true;
                 return true;
             }

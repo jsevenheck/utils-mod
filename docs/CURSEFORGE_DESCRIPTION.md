@@ -59,13 +59,13 @@ spaces in quotes, for example:
 
 ### Safe inventory sorting
 
-Press the rebindable **Sort Inventory** key (default: `R`) in your inventory, the custom Bundle view,
-or a supported chest-like container to sort and consolidate items.
+Press the rebindable **Sort Inventory** key (default: `R`) while a chest or double chest is open to
+sort and consolidate that chest's own storage grid.
 
-Supported screens include the player main inventory, chests, double chests, hoppers,
-dispensers/droppers, and shulker boxes. The mod intentionally leaves the hotbar, armor, offhand,
-crafting slots, furnaces, trading, anvils, enchanting, creative inventory, and unsupported menus
-alone.
+Your own player inventory and hotbar are never sorted, even while a chest is open — only the chest's
+slots are touched. The player inventory screen on its own, the custom Bundle view, hoppers,
+dispensers/droppers, shulker boxes, and every other menu (crafting, furnaces, trading, anvils,
+enchanting, creative inventory, ...) are intentionally left alone.
 
 ### Improved Bundle UI
 

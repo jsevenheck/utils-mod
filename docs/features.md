@@ -12,12 +12,11 @@ Vanilla locator markers and private local waypoint markers can be controlled ind
 The HUD is disabled outside a loaded world. Server-provided locator markers only appear when the
 server actually provides them; a solo singleplayer world has no other player marker to display.
 
-Vanilla's own locator bar (above the hotbar) normally gets replaced by the XP bar for 5 seconds every
-time the player gains experience or closes an anvil/enchanting table screen — intended vanilla
-behaviour, but it hides other players' dots almost continuously during normal play (e.g. grinding
-mobs). With `keepVanillaLocatorBarVisible` on (default), a small mixin keeps vanilla's locator bar
-visible instead. This only affects vanilla's own bar; the compass HUD strip at the top already shows
-locator markers unconditionally whenever `compassVanillaWaypointMarkersEnabled` is on.
+Unlike vanilla's own locator bar (above the hotbar, which vanilla temporarily replaces with the XP bar
+for 5 seconds every time the player gains experience), the compass HUD strip at the top shows locator
+markers unconditionally whenever `compassVanillaWaypointMarkersEnabled` is on — it never hides other
+players just because you picked up XP. Vanilla's own bottom bar and its XP-progress display are left
+untouched so the normal "XP needed until next level" view still works as expected.
 
 ## Local waypoints
 
@@ -68,17 +67,18 @@ included.
 
 ## Inventory sorting
 
-The rebindable **Sort Inventory** key defaults to `R` (`Options → Controls → Inventory`). It works in
-the normal player inventory, supported chest-like containers, and the custom Bundle view. The sorter
-uses normal vanilla container clicks, validates the menu, cursor, and slot state before every action,
-and stops safely if the screen or server state changes.
+The rebindable **Sort Inventory** key defaults to `R` (`Options → Controls → Inventory`). It works only
+while a chest or double chest is open, and only sorts that chest's own storage grid. The sorter uses
+normal vanilla container clicks, validates the menu, cursor, and slot state before every action, and
+stops safely if the screen or server state changes.
 
-Supported container menus are chests/double chests, hoppers, dispensers/droppers, and shulker boxes.
-The player's main inventory is sorted where supported. The hotbar, armor/offhand, crafting, furnace,
-trading, anvil, enchanting, creative inventory, and other unsupported menus are left untouched.
+The player's main inventory and hotbar are never sorted, even while a chest is open — only the chest's
+slots are touched. The player inventory screen (no container open), the custom Bundle view, hoppers,
+dispensers/droppers, shulker boxes, and every other menu (crafting, furnace, trading, anvil, enchanting,
+creative inventory, ...) are all left untouched; pressing the key there does nothing (or reports the
+menu as unsupported).
 
-The `sortSectionsIndependently` setting keeps a container and the player's inventory as separate pools
-by default. Sorting is client-triggered but server-authoritative; no item stacks are edited directly.
+Sorting is client-triggered but server-authoritative; no item stacks are edited directly.
 
 ## Improved Bundle UI
 
@@ -87,9 +87,13 @@ It displays Bundle contents in a paged grid and renders the real player inventor
 Shift extraction, insertion, remainder handling, tooltips, stack decorations, and mouse-wheel paging
 use vanilla Bundle rules and synchronized menu state.
 
-Pressing the inventory-sort key (`R` by default) while the Bundle screen is open sorts the real player
-main inventory while keeping the Bundle view open. Bundle interactions and sorting cannot manipulate the
-same menu concurrently.
+Left-clicking or plain right-clicking a Bundle entry takes out the whole merged stack shown in that
+slot (matching vanilla's own Bundle behaviour, which has no concept of a partial amount). Shift + Right
+Click instead takes just one item onto the cursor, leaving the rest in the Bundle, and can be clicked
+repeatedly on the same entry to keep adding one more to the held stack each time — this needs one free
+inventory/hotbar slot as scratch space (vanilla's own Bundle extraction only fires with an empty
+cursor, so repeated clicks park the held stack, extract normally, top it up by one, and pick it back
+up) and is silently ignored if the inventory is completely full or the stack is already maxed out.
 
 Clicking anywhere outside every slot (Bundle grid or player inventory/hotbar) while carrying an item
 throws it into the world, matching vanilla's click-outside-to-drop behaviour (left click throws the
@@ -107,11 +111,9 @@ All settings use `config/compass-hud.json`:
 | --- | --- | --- |
 | `compassHudEnabled` | `true` | Show the compass HUD. |
 | `compassVanillaWaypointMarkersEnabled` | `true` | Show server-provided locator markers. |
-| `keepVanillaLocatorBarVisible` | `true` | Keep vanilla's own locator bar from being replaced by the XP bar. |
 | `localWaypointMarkersEnabled` | `true` | Show local waypoint markers. |
 | `maxVisibleLocalWaypointMarkers` | `8` | Maximum nearest local markers considered (`1`–`32`). |
-| `inventorySortEnabled` | `true` | Enable inventory sorting. |
-| `sortSectionsIndependently` | `true` | Keep container and player inventory sorting pools separate. |
+| `inventorySortEnabled` | `true` | Enable inventory sorting (chests only). |
 | `clickDelayTicks` | `1` | Minimum ticks between sorting clicks. |
 | `bundleUiEnabled` | `true` | Enable the improved Bundle screen. |
 | `bundleUiShiftRightClick` | `true` | Enable Shift + Right Click Bundle opening. |

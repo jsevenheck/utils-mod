@@ -46,13 +46,13 @@ name in `color` or `rename`, for example `/compasshud waypoint color "Old Base" 
 
 ### Inventory Sort
 
-Press the **Sort Inventory** key (default: `R`, rebindable in *Options → Controls → Inventory*) while
-a supported inventory screen or the custom Bundle view is open. The feature safely sorts the player main
-inventory and supported chest-like container storage.
+Press the **Sort Inventory** key (default: `R`, rebindable in *Options → Controls → Inventory*) while a
+chest or double chest is open. The feature sorts only that chest's own storage grid.
 
-Supported: the player main inventory, chests/double chests, hoppers, dispensers/droppers, and shulker
-boxes. The hotbar, armor/offhand, crafting, furnace, villager, anvil, enchanting, creative, and other
-unsupported menus are deliberately left untouched.
+The player's main inventory and hotbar are never sorted, even while a chest is open. The player
+inventory screen (no container open), the custom Bundle view, hoppers, dispensers/droppers, shulker
+boxes, and every other menu (crafting, furnace, villager, anvil, enchanting, creative, ...) are
+deliberately left untouched.
 
 Minecraft is server-authoritative, so the mod uses ordinary vanilla container clicks rather than
 editing item stacks locally. It validates the menu, slots, and cursor before every queued action and
@@ -83,8 +83,7 @@ A config file is created at `config/compass-hud.json` on first run.
 | `compassVanillaWaypointMarkersEnabled` | `true` | Show server-provided locator dots. |
 | `localWaypointMarkersEnabled` | `true` | Show local waypoint dots without deleting them. |
 | `maxVisibleLocalWaypointMarkers` | `8` | Nearest local markers considered by the compass (`1`–`32`). |
-| `inventorySortEnabled` | `true` | Enable inventory sorting. |
-| `sortSectionsIndependently` | `true` | Keep an open container and player inventory as separate sorting pools. |
+| `inventorySortEnabled` | `true` | Enable inventory sorting (chests only). |
 | `clickDelayTicks` | `1` | Minimum ticks between sort clicks. |
 | `bundleUiEnabled` | `true` | Enable the improved Bundle screen. |
 | `bundleUiShiftRightClick` | `true` | Enable the default Bundle shortcut. |

@@ -71,9 +71,8 @@ public final class BundleFeature implements ModFeature {
         }
 
         minecraft.gui.setScreen(new BundleScreen(menu, inventory, bundleSlot.index));
-        // The lock protects opening against a concurrent sort, but the virtual screen itself
-        // acquires it only while a Bundle operation is actually executing. This lets the inventory
-        // sorter work on the real InventoryMenu while this screen remains open.
+        // The lock only protects opening itself against a concurrent Bundle/sort operation; the
+        // virtual screen re-acquires it separately, only while a Bundle click is actually executing.
         InventoryOperationLock.release(BundleScreen.lockOwner());
         return true;
     }

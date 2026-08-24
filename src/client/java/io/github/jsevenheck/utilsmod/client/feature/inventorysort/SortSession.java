@@ -12,23 +12,24 @@ import java.util.Set;
 
 /**
  * A resolved snapshot of the currently open, supported menu: the real menu it came from (for click
- * execution) plus the sortable slots split into their two independent sections. Either section may be
- * empty (a plain player inventory screen has no container section).
+ * execution) plus the chest's own sortable slots. The player's inventory/hotbar is never included --
+ * see {@link SortableSlotResolver}.
  */
-record SortSession(AbstractContainerMenu menu, List<SortSlot> playerSlots, List<SortSlot> containerSlots) {
+record SortSession(AbstractContainerMenu menu, List<SortSlot> slots) {
 
     boolean isEmpty() {
-        return playerSlots.isEmpty() && containerSlots.isEmpty();
+        return slots.isEmpty();
     }
 
     /**
-     * Vanilla PICKUP_ALL searches every slot in the open menu, so a matching stack outside this
-     * section would be collected accidentally. Such identities are deliberately excluded.
+     * Vanilla PICKUP_ALL searches every slot in the open menu, so a matching stack outside the
+     * sorted slots (e.g. the player's own inventory row) would be collected accidentally. Such
+     * identities are deliberately excluded.
      */
-    Set<ItemIdentity> pickupAllSafeIdentities(List<SortSlot> section) {
+    Set<ItemIdentity> pickupAllSafeIdentities() {
         Set<Integer> sectionSlots = new HashSet<>();
         Set<ItemIdentity> safe = new HashSet<>();
-        for (SortSlot sortSlot : section) {
+        for (SortSlot sortSlot : slots) {
             sectionSlots.add(sortSlot.slotIndex());
             if (!sortSlot.isEmpty()) {
                 safe.add(sortSlot.identity());

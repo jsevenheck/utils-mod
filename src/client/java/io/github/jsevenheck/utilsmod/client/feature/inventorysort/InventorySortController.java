@@ -1,21 +1,17 @@
 package io.github.jsevenheck.utilsmod.client.feature.inventorysort;
 
 import io.github.jsevenheck.utilsmod.client.config.ModConfig;
-import io.github.jsevenheck.utilsmod.client.feature.bundle.BundleScreen;
 import io.github.jsevenheck.utilsmod.feature.InventoryOperationLock;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.ClickOperation;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.InventoryClickPlanner;
-import io.github.jsevenheck.utilsmod.feature.inventorysort.ItemIdentity;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.InventorySortPlanner;
 import io.github.jsevenheck.utilsmod.feature.inventorysort.SortSlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Orchestrates a single sort trigger: resolves the current screen into sortable slots, plans the
@@ -46,7 +42,7 @@ final class InventorySortController {
             return;
         }
 
-        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?> || minecraft.gui.screen() instanceof BundleScreen)) {
+        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?>)) {
             // No relevant screen open at all -- do nothing, silently, as if the key wasn't bound to anything here.
             return;
         }
@@ -63,7 +59,7 @@ final class InventorySortController {
             return;
         }
 
-        List<ClickOperation> operations = planOperations(session, config);
+        List<ClickOperation> operations = planOperations(session);
         if (operations.isEmpty()) {
             feedback(minecraft, "compass-hud.inventorysort.already_sorted");
             return;
@@ -75,25 +71,13 @@ final class InventorySortController {
         activeExecution = new InventoryClickExecutor(session.menu(), operations, config.effectiveClickDelayTicks());
     }
 
-    private static List<ClickOperation> planOperations(SortSession session, ModConfig config) {
-        List<ClickOperation> operations = new ArrayList<>();
-        if (config.sortSectionsIndependently) {
-            operations.addAll(planSection(session.playerSlots(), session.pickupAllSafeIdentities(session.playerSlots())));
-            operations.addAll(planSection(session.containerSlots(), session.pickupAllSafeIdentities(session.containerSlots())));
-        } else {
-            List<SortSlot> combined = new ArrayList<>(session.playerSlots());
-            combined.addAll(session.containerSlots());
-            operations.addAll(planSection(combined, session.pickupAllSafeIdentities(combined)));
-        }
-        return operations;
-    }
-
-    private static List<ClickOperation> planSection(List<SortSlot> slots, Set<ItemIdentity> pickupAllSafeIdentities) {
+    private static List<ClickOperation> planOperations(SortSession session) {
+        List<SortSlot> slots = session.slots();
         if (slots.isEmpty()) {
             return List.of();
         }
         List<SortSlot> target = InventorySortPlanner.plan(slots);
-        return InventoryClickPlanner.plan(slots, target, pickupAllSafeIdentities);
+        return InventoryClickPlanner.plan(slots, target, session.pickupAllSafeIdentities());
     }
 
     private static void feedback(Minecraft minecraft, String translationKey) {
