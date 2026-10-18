@@ -15,11 +15,6 @@
       "Bash(./gradlew --stop*)",
       "Bash(./gradlew --version*)",
 
-      "Bash(graphify update*)",
-      "Bash(graphify query*)",
-      "Bash(graphify path*)",
-      "Bash(graphify explain*)",
-
       "Bash(git status)",
       "Bash(git diff*)",
       "Bash(git log*)",
@@ -62,7 +57,6 @@
       "Edit(**/.env*)",
       "Write(**/.env*)",
       "Read(**/.env*)",
-      "Read(**/graphify-out/**)",
 
       "Edit(**/.claude/settings.json)",
       "Write(**/.claude/settings.json)",
@@ -78,18 +72,6 @@
       "Bash(rm -rf*)",
       "Bash(sudo*)",
       "Bash(su*)"
-    ]
-  },
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python ${CLAUDE_PROJECT_DIR}/.claude/hooks/graphify_hint.py"
-          }
-        ]
-      }
     ]
   }
 }
